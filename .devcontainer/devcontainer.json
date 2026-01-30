@@ -1,42 +1,33 @@
 {
-    "name": "Ecoindex python full stack dev container",
-    "image": "mcr.microsoft.com/devcontainers/python:3.12",
-    "postCreateCommand": "pipx install poetry==1.8.5 && poetry self add poetry-multiproject-plugin && poetry self add poetry-polylith-plugin",
+    "name": "EcoIndex Python",
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.12",
     "features": {
         "ghcr.io/audacioustux/devcontainers/taskfile": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {
-            "installDockerBuildx": true,
-            "version": "latest",
-            "dockerDashComposeVersion": "v2"
-        }
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
     },
-    "forwardPorts": [
-        8000
-    ],
     "customizations": {
         "vscode": {
             "extensions": [
-                "-ms-python.autopep8",
-                "adrianwilczynski.alpine-js-intellisense",
-                "adrianwilczynski.alpine-js-intellisense",
-                "bierner.markdown-emoji",
-                "charliermarsh.ruff",
-                "Codeium.codeium",
-                "github.vscode-github-actions",
-                "Gruntfuggly.todo-tree",
-                "mhutchie.git-graph",
-                "ms-azuretools.vscode-docker",
-                "ms-python.mypy-type-checker",
                 "ms-python.python",
-                "Perkovec.emoji",
-                "samuelcolvin.jinjahtml",
+                "ms-python.vscode-pylance",
+                "ms-python.black-formatter",
+                "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
-                "ue.alphabetical-sorter",
-                "yzhang.markdown-all-in-one",
-                "esbenp.prettier-vscode",
-                "ms-pyright.pyright",
-                "-ms-python.vscode-pylance"
-            ]
+                "ms-python.mypy-type-checker",
+                "mhutchie.git-graph"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.formatting.provider": "black",
+                "python.linting.enabled": true,
+                "python.linting.ruffEnabled": true,
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": "explicit"
+                }
+            }
         }
-    }
+    },
+    "postCreateCommand": "pipx install poetry==1.8.5 && poetry self add poetry-multiproject-plugin && poetry self add poetry-polylith-plugin",
+    "remoteUser": "vscode"
 }
