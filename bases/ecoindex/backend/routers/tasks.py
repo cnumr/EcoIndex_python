@@ -1,6 +1,8 @@
 from json import loads
 from typing import Annotated
+from urllib.parse import urlparse, urlunparse
 
+import idna
 import requests
 from celery.result import AsyncResult
 from ecoindex.backend.dependencies.validation import validate_api_key_batch
@@ -26,6 +28,48 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 router = APIRouter(prefix="/v1/tasks/ecoindexes", tags=["Tasks"])
 
 
+def convert_url_to_punycode(url: str) -> str:
+    """
+    Convert an URL with emoji domain (or any Unicode domain) to Punycode.
+    This makes the URL compatible with requests library.
+
+    Args:
+        url: The URL string that may contain Unicode characters in the domain
+
+    Returns:
+        The URL with the domain converted to Punycode
+    """
+    parsed = urlparse(url)
+
+    # Extract the hostname (netloc may contain port, so we need to handle that)
+    hostname = parsed.hostname
+    if not hostname:
+        return url
+
+    try:
+        # Convert the hostname to Punycode
+        hostname_punycode = idna.encode(hostname).decode("ascii")
+
+        # Reconstruct the netloc with the converted hostname
+        if parsed.port:
+            netloc = f"{hostname_punycode}:{parsed.port}"
+        else:
+            netloc = hostname_punycode
+
+        # Reconstruct the URL with the converted hostname
+        return urlunparse((
+            parsed.scheme,
+            netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query,
+            parsed.fragment,
+        ))
+    except (idna.IDNAError, UnicodeError):
+        # If conversion fails, return the original URL
+        return url
+
+
 @router.post(
     name="Add new ecoindex analysis task to the waiting queue",
     path="/",
@@ -46,7 +90,8 @@ async def add_ecoindex_analysis_task(
         Body(
             default=...,
             title="Web page to analyze defined by its url and its screen resolution",
-            example=WebPage(url="https://www.ecoindex.fr", width=1920, height=1080),
+            example=WebPage(url="https://www.ecoindex.fr",
+                            width=1920, height=1080),
         ),
     ],
     custom_headers: Annotated[
@@ -64,7 +109,8 @@ async def add_ecoindex_analysis_task(
         )
 
         if remaining_quota:
-            response.headers["X-Remaining-Daily-Requests"] = str(remaining_quota - 1)
+            response.headers["X-Remaining-Daily-Requests"] = str(
+                remaining_quota - 1)
 
     if (
         Settings().EXCLUDED_HOSTS
@@ -78,9 +124,12 @@ async def add_ecoindex_analysis_task(
     ua = EcoindexScraper.get_user_agent()
     headers = {**custom_headers, **ua.headers.get()}
 
+    # Convert URL to Punycode to handle emoji domains and other Unicode domains
+    url_for_request = convert_url_to_punycode(str(web_page.url))
+
     try:
         r = requests.head(
-            url=web_page.url,
+            url=url_for_request,
             timeout=5,
             headers=headers,
         )
