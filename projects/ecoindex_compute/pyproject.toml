@@ -6,9 +6,8 @@ description = "Ecoindex module provides a simple way to measure the Ecoindex sco
 authors = ['Vincent Vatelot <vincent.vatelot@ik.me>']
 license = "Creative Commons BY-NC-ND"
 homepage = "http://www.ecoindex.fr"
-repository = "https://github.com/cnumr/ecoindex_python"
+repository = "https://github.com/cnumr/EcoIndex_python"
 include = ["LICENSE"]
-
 packages = [
     { include = "ecoindex/compute", from = "../../components" },
     { include = "ecoindex/data", from = "../../components" },

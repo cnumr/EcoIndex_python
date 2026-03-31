@@ -6,7 +6,7 @@ description = "Ecoindex_scraper module provides a way to scrape data from given 
 authors = ['Vincent Vatelot <vincent.vatelot@ik.me>']
 license = "Creative Commons BY-NC-ND"
 homepage = "http://www.ecoindex.fr"
-repository = "https://github.com/cnumr/ecoindex_scrap_python"
+repository = "https://github.com/cnumr/EcoIndex_python"
 include = ["LICENSE"]
 packages = [
     { include = "ecoindex/compute", from = "../../components" },
