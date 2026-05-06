@@ -33,7 +33,7 @@ tomli = "^2.0.1"
 haralyzer = "^2.4.0"
 python-slugify = "^8.0.4"
 setuptools = "^78.1.1"
-cryptography = "^44.0.2"
+cryptography = ">=44.0.2,<47.0.0"
 
 [tool.poetry.group.scraper.dependencies]
 pillow = "^12.0.0"
