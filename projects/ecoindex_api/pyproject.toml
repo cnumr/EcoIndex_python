@@ -39,7 +39,7 @@ requests = "^2.32.4"
 sqlmodel = "^0.0.14"
 sentry-sdk = "^2.8.0"
 setuptools = "^78.1.1"
-cryptography = "^44.0.2"
+cryptography = ">=44.0.2,<47.0.0"
 ua-generator = "^2.0.5"
 
 [tool.poetry.group.backend.dependencies]
