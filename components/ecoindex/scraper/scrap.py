@@ -129,7 +129,10 @@ class EcoindexScraper:
     async def generate_screenshot(self) -> None:
         if self.screenshot and self.screenshot.folder and self.screenshot.id:
             await self.page.screenshot(path=self.screenshot.get_png())
-            await convert_screenshot_to_webp(self.screenshot)
+            try:
+                await convert_screenshot_to_webp(self.screenshot)
+            except ImportError:
+                print("WebP conversion skipped: Pillow library is not installed.")
             await set_screenshot_rights(
                 screenshot=self.screenshot,
                 uid=self.screenshot_uid,

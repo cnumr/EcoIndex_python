@@ -14,7 +14,13 @@ This module provides a simple interface to get the [Ecoindex](http://www.ecoinde
 ## Install
 
 ```shell
-pip install ecoindex-scraper
+pip install ecoindex_scraper
+```
+
+If you need to convert the screenshot to webp with the `generate_screenshot` method, you need to install the Pillow dependency.
+
+```shell
+pip install ecoindex_scraper[webp] # OR directly pillow
 ```
 
 ## Use
