@@ -32,6 +32,7 @@ class EcoindexScraper:
         basic_auth: str | None = None,
         cookies: list[SetCookieParam] = [],
         custom_headers: dict[str, str] = {},
+        logger=None,
     ):
         self.url = url
         self.window_size = window_size
@@ -50,6 +51,7 @@ class EcoindexScraper:
         self.basic_auth = basic_auth
         self.cookies = cookies
         self.custom_headers = custom_headers
+        self.logger = logger
 
     @staticmethod
     def get_user_agent() -> UserAgent:
@@ -132,7 +134,10 @@ class EcoindexScraper:
             try:
                 await convert_screenshot_to_webp(self.screenshot)
             except ImportError:
-                print("WebP conversion skipped: Pillow library is not installed.")
+                if self.logger:
+                    self.logger.warning(
+                        "WebP conversion skipped: Pillow library is not installed."
+                    )
             await set_screenshot_rights(
                 screenshot=self.screenshot,
                 uid=self.screenshot_uid,
@@ -194,8 +199,7 @@ class EcoindexScraper:
                 {
                     "mimetype": content_type,
                     "message": (
-                        "This resource is not "
-                        "a standard page with mimeType 'text/html'"
+                        "This resource is not a standard page with mimeType 'text/html'"
                     ),
                 }
             )
