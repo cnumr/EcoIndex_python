@@ -27,7 +27,7 @@ aiofile = "^3.8.8"
 alembic = "^1.12.1"
 celery = "^5.3.4"
 fastapi = "^0.109.1"
-pillow = "^12.0.0"
+pillow = { version = "^12.2.0", optional = true }
 playwright = "^1.39.0"
 playwright-stealth = "^1.0.6"
 pydantic = { version = ">=2.1.1,<=2.4.2", extras = ["email"] }
@@ -46,7 +46,7 @@ ua-generator = "^2.0.5"
 uvicorn = "^0.23.2"
 
 [tool.poetry.group.worker.dependencies]
-pillow = "^12.0.0"
+pillow = { version = "^12.2.0", optional = true }
 playwright = "^1.39.0"
 playwright-stealth = "^1.0.6"
 

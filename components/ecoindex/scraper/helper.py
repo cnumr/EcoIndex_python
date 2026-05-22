@@ -20,11 +20,13 @@ def run_page_analysis(
         wait_after_scroll=wait_after_scroll,
         wait_before_scroll=wait_before_scroll,
         page_load_timeout=20,
+        logger=logger,
     )
     try:
         return (run(scraper.get_page_analysis()), True)
     except Exception as e:
-        logger.error(f"{url} -- {e.msg if hasattr(e, 'msg') else e}")
+        if logger:
+            logger.error(f"{url} -- {e.msg if hasattr(e, 'msg') else e}")
 
         return (
             Result(
