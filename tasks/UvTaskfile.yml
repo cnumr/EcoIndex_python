@@ -1,0 +1,68 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Run uv
+    cmds:
+      - uv {{.CLI_ARGS}}
+    silent: true
+
+  install:
+    desc: Install workspace dependencies
+    cmds:
+      - uv sync --all-groups
+    silent: true
+
+  add:
+    desc: Add a dependency to the workspace
+    cmds:
+      - uv add {{.CLI_ARGS}}
+    silent: true
+
+  remove:
+    desc: Remove a dependency from the workspace
+    cmds:
+      - uv remove {{.CLI_ARGS}}
+    silent: true
+
+  update:
+    desc: Update workspace dependencies
+    cmds:
+      - uv lock --upgrade
+    silent: true
+
+  build:
+    desc: Build the distribution for {{.PACKAGE_NAME}}
+    cmds:
+      - uv lock
+      - uv build --package {{.PACKAGE_NAME}} --out-dir {{.OUT_DIR}} --clear
+    silent: true
+
+  bump:
+    internal: true
+    preconditions:
+      - sh: '[[ "{{.VERSION_RULE}}" =~ ^(major|minor|patch|premajor|preminor|prepatch|prerelease|alpha|beta|rc|stable|post|dev)$ ]]'
+        msg: "Invalid version rule: `{{.VERSION_RULE}}`"
+    vars:
+      UV_BUMP: '{{if eq .VERSION_RULE "premajor"}}major{{else if eq .VERSION_RULE "preminor"}}minor{{else if eq .VERSION_RULE "prepatch"}}patch{{else if eq .VERSION_RULE "prerelease"}}rc{{else}}{{.VERSION_RULE}}{{end}}'
+    cmds:
+      - uv version --package {{.PACKAGE_NAME}} --short > /tmp/version-current-output-{{.PROJECT_NAME}}
+      - uv version --package {{.PACKAGE_NAME}} --bump {{.UV_BUMP}} --short > /tmp/version-bump-output-{{.PROJECT_NAME}}
+      - echo "Current version:$(cat /tmp/version-current-output-{{.PROJECT_NAME}})"
+      - echo "Bumped version:$(cat /tmp/version-bump-output-{{.PROJECT_NAME}})"
+      - echo "Update {{.VERSION_FILE_PATH}}"
+      - echo "$(cat /tmp/version-bump-output-{{.PROJECT_NAME}})" > {{.VERSION_FILE_PATH}}
+    silent: true
+
+  version-short:
+    desc: Show the current version of {{.PACKAGE_NAME}}
+    cmds:
+      - uv version --package {{.PACKAGE_NAME}} --short
+    silent: true
+
+  install-playwright:
+    desc: Install playwright
+    cmds:
+      - uv run playwright install chromium --with-deps
+    silent: true
+    interactive: true

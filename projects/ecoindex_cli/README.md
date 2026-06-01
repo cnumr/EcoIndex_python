@@ -343,32 +343,32 @@ width,height,url,size,nodes,requests,grade,score,ges,water,date,page_type
 ### Requirements
 
 - Python 3.10+
-- [Poetry](https://python-poetry.org/)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - [Task](https://taskfile.dev/#/installation)
 
 ### Installation
 
-At first, you need to install dependencies:
+At first, you need to install dependencies from the repository root:
 
 ```bash
-poetry install
-poetry run playwright install chromium --with-deps
+uv sync --all-groups
+uv run playwright install chromium --with-deps
 ```
 
 ### Usage
 
 ```bash
-poetry run ecoindex-cli --help
-poetry run ecoindex-cli analyze --help
-poetry run ecoindex-cli report --help
+uv run --package ecoindex_cli ecoindex-cli --help
+uv run --package ecoindex_cli ecoindex-cli analyze --help
+uv run --package ecoindex_cli ecoindex-cli report --help
 ```
 
 ### Testing
 
-We use Pytest to run unit tests for this project. The test suite are in the `tests` folder. Just execute :
+We use Pytest to run unit tests for this project. The test suite are in the `tests` folder. Just execute from the repository root:
 
 ```bash
-poetry run pytest --cov-report term-missing:skip-covered --cov=. --cov-config=.coveragerc tests
+uv run pytest --cov-report term-missing:skip-covered --cov=. --cov-config=.coveragerc test
 ```
 
 > This runs pytest and also generate a [coverage report](https://pytest-cov.readthedocs.io/en/latest/) (terminal and html)

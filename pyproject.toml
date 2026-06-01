@@ -1,89 +1,81 @@
-[tool.poetry]
+[project]
 name = "ecoindex-monorepo"
 version = "0.1.0"
 description = ""
-authors = ["Vincent Vatelot <vincent.vatelot@ik.me>"]
 readme = "README.md"
-packages = [
-    { include = "development" },
-    { include = "ecoindex/backend", from = "bases" },
-    { include = "ecoindex/cli", from = "bases" },
-    { include = "ecoindex/compute", from = "components" },
-    { include = "ecoindex/config", from = "components" },
-    { include = "ecoindex/data", from = "components" },
-    { include = "ecoindex/database", from = "components" },
-    { include = "ecoindex/exceptions", from = "components" },
-    { include = "ecoindex/models", from = "components" },
-    { include = "ecoindex/scraper", from = "components" },
-    { include = "ecoindex/scripts", from = "components" },
-    { include = "ecoindex/utils", from = "components" },
-    { include = "ecoindex/worker_component", from = "components" },
-    { include = "ecoindex/worker", from = "bases" },
+requires-python = ">=3.10,<3.13"
+authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
+dependencies = [
+    "aiofile>=3.8.8",
+    "cryptography>=44.0.2",
+    "haralyzer>=2.4.0",
+    "loguru>=0.7.2",
+    "pydantic>=2.4.2",
+    "pydantic-settings>=2.0.3",
+    "python-slugify>=8.0.4",
+    "redis[hiredis]>=5.0.1",
+    "requests>=2.32.4",
+    "setuptools>=78.1.1",
+    "tomli>=2.0.1",
 ]
 
-[tool.poetry.dependencies]
-aiofile = "^3.8.8"
-loguru = "^0.7.2"
-pydantic = "^2.4.2"
-pydantic-settings = "^2.0.3"
-python = ">=3.10,<3.13"
-redis = { extras = ["hiredis"], version = "^5.0.1" }
-requests = "^2.32.4"
-tomli = "^2.0.1"
-haralyzer = "^2.4.0"
-python-slugify = "^8.0.4"
-setuptools = "^78.1.1"
-cryptography = "^44.0.2"
+[project.scripts]
+update-values = "ecoindex.scripts:update_values"
 
-[tool.poetry.group.scraper.dependencies]
-playwright = "^1.39.0"
-playwright-stealth = "^1.0.6"
-
-[tool.poetry.group.scraper-webp.dependencies]
-pillow = { version = "^12.2.0", optional = true }
-
-[tool.poetry.group.cli.dependencies]
-click-spinner = "^0.1.10"
-jinja2 = "^3.1.3"
-matplotlib = "^3.8.0"
-pandas = "^2.1.2"
-pyyaml = "^6.0.1"
-rich = "^13.6.0"
-scrapy = "^2.11.1"
-typer = "^0.9.0"
-
-[tool.poetry.group.api.dependencies]
-aiosqlite = "^0.19.0"
-alembic = "^1.12.1"
-celery = "^5.3.4"
-redis = "^5.0.1"
-sqlmodel = "^0.0.14"
-sentry-sdk = "^2.8.0"
-ua-generator = "^2.0.3"
-
-[tool.poetry.group.api-backend.dependencies]
-fastapi = "^0.109.1"
-uvicorn = "^0.23.2"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.3.0"
-mypy = "^1.7.0"
-pytest = "^7.4.2"
-pytest-asyncio = "^0.21.1"
-pytest-cov = "^4.1.0"
-ruff = "^0.1.1"
-types-click-spinner = "^0.1.13.6"
-types-pyyaml = "^6.0.12.12"
-types-requests = "^2.31.0.10"
-watchdog = "^6.0.0"
-pytest-picked = "^0.5.0"
+[dependency-groups]
+scraper = [
+    "playwright>=1.39.0",
+    "playwright-stealth>=1.0.6",
+]
+scraper-webp = [
+    "pillow>=12.2.0",
+]
+cli = [
+    "click-spinner>=0.1.10",
+    "jinja2>=3.1.3",
+    "matplotlib>=3.8.0",
+    "pandas>=2.1.2",
+    "pyyaml>=6.0.1",
+    "rich>=13.6.0",
+    "scrapy>=2.11.1",
+    "typer>=0.9.0",
+]
+api = [
+    "aiosqlite>=0.19.0",
+    "alembic>=1.12.1",
+    "celery>=5.3.4",
+    "sentry-sdk>=2.8.0",
+    "sqlmodel>=0.0.14",
+    "ua-generator>=2.0.3",
+]
+api-backend = [
+    "fastapi>=0.109.1",
+    "uvicorn>=0.23.2",
+]
+dev = [
+    "black>=24.3.0",
+    "mypy>=1.7.0",
+    "polylith-cli",
+    "pytest>=7.4.2",
+    "pytest-asyncio>=0.21.1",
+    "pytest-cov>=4.1.0",
+    "pytest-picked>=0.5.0",
+    "ruff>=0.1.1",
+    "types-click-spinner>=0.1.13.6",
+    "types-pyyaml>=6.0.12.12",
+    "types-requests>=2.31.0.10",
+    "watchdog>=6.0.0",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry.scripts]
-update-values = "ecoindex.scripts:update_values"
+[tool.hatch.build]
+dev-mode-dirs = ["components", "bases", "development", "."]
+
+[tool.uv.workspace]
+members = ["projects/*"]
 
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]

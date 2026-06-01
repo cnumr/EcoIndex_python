@@ -1,18 +1,25 @@
 version: '3'
 
 includes:
-  poetry: ../../tasks/PoetryTaskfile.yml
-  pypi: ../../tasks/PypiTaskFile.yml
+  uv:
+    taskfile: ../../tasks/UvTaskfile.yml
+    dir: ../..
+  pypi:
+    taskfile: ../../tasks/PypiTaskFile.yml
+    dir: ../..
 
 vars:
   PROJECT_NAME: compute
+  PACKAGE_NAME: ecoindex_compute
+  OUT_DIR: projects/ecoindex_compute/dist
 
 tasks:
   bump:
     desc: Bump the compute version with rules:major, minor, patch, premajor, preminor, prepatch or prerelease.
     cmds:
-      - task: poetry:bump
+      - task: uv:bump
         vars:
-          VERSION_FILE_PATH: "../../components/ecoindex/compute/VERSION"
+          VERSION_FILE_PATH: "components/ecoindex/compute/VERSION"
           VERSION_RULE: "{{.CLI_ARGS}}"
+    dir: ../..
     silent: true
