@@ -1,28 +1,57 @@
-ci/cd:
-  - .github/workflows/*
+'ci/cd':
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - '.github/workflows/**'
 
 documentation:
-  - README.md
-  - ./**/*.md
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'README.md'
+              - '**/*.md'
 
 tooling:
-  - ./**/*TaskFile.yml
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - '**/*TaskFile.yml'
+              - '**/*Taskfile.yml'
 
 tests:
-  - test/**
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'test/**'
+              - 'tests/**'
 
 compute:
-  - components/ecoindex/compute/**
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'components/ecoindex/compute/**'
 
 scraper:
-  - components/ecoindex/scraper/**
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'components/ecoindex/scraper/**'
 
 cli:
-  - bases/ecoindex/cli/**
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'bases/ecoindex/cli/**'
 
 api:
-  - bases/ecoindex/backend/**
-  - bases/ecoindex/worker/**
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'bases/ecoindex/backend/**'
+              - 'bases/ecoindex/worker/**'
 
 components:
-  - components
+  - any:
+      - changed-files:
+          - any-glob-to-any-file:
+              - 'components/**'

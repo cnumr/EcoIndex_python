@@ -780,6 +780,7 @@ source = { editable = "projects/ecoindex_cli" }
 dependencies = [
     { name = "aiofile", version = "3.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "aiofile", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "click" },
     { name = "click-spinner" },
     { name = "jinja2" },
     { name = "loguru" },
@@ -800,6 +801,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiofile", specifier = ">=3.8.8" },
+    { name = "click", specifier = ">=8.0.0" },
     { name = "click-spinner", specifier = ">=0.1.10" },
     { name = "jinja2", specifier = ">=3.1.2" },
     { name = "loguru", specifier = ">=0.7.2" },
@@ -867,6 +869,7 @@ api-backend = [
     { name = "uvicorn" },
 ]
 cli = [
+    { name = "click" },
     { name = "click-spinner" },
     { name = "jinja2" },
     { name = "matplotlib" },
@@ -928,6 +931,7 @@ api-backend = [
     { name = "uvicorn", specifier = ">=0.23.2" },
 ]
 cli = [
+    { name = "click", specifier = ">=8.0.0" },
     { name = "click-spinner", specifier = ">=0.1.10" },
     { name = "jinja2", specifier = ">=3.1.3" },
     { name = "matplotlib", specifier = ">=3.8.0" },
