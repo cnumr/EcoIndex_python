@@ -4,5 +4,5 @@ tasks:
   publish:
     desc: Publish the project {{.PROJECT_NAME}} to PyPI
     cmds:
-      - uv publish --directory {{.OUT_DIR}}
+      - uv publish {{.OUT_DIR}}/*
     silent: true
