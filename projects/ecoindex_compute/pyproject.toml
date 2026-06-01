@@ -1,6 +1,6 @@
 [project]
 name = "ecoindex_compute"
-version = "5.9.0"
+version = "5.10.0"
 description = "Ecoindex module provides a simple way to measure the Ecoindex score based on the 3 parameters: The DOM elements of the page, the size of the page and the number of external requests of the page"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
