@@ -87,7 +87,7 @@ namespace_packages = true
 explicit_package_bases = true
 ignore_missing_imports = true
 disallow_untyped_defs = false
-exclude = ["test", "dist", "__pycache__"]
+exclude = ["test", "dist", "__pycache__", "projects/ecoindex_api/alembic/versions"]
 
 [tool.coverage.run]
 omit = ["test/*"]

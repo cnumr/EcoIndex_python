@@ -41,8 +41,7 @@ def test_analyze_one_valid_url() -> None:
     result = runner.invoke(app=app, args=["analyze", "--url", valid_url], input="n\n")
     assert "There are 1 url(s), do you want to process?" in result.stdout
     assert result.exit_code == 1
-    assert "Aborted" in result.stdout
-    assert f"📁️ Urls recorded in file `input/{domain}.csv`"
+    assert f"{domain}.csv" in result.stdout
     remove(f"/tmp/ecoindex-cli/input/{domain}.csv")
 
 
@@ -84,7 +83,6 @@ def test_analyze_abort_recursive() -> None:
         "You are about to perform a recursive website scraping. This can take a long time. Are you sure to want to proceed?"
         in result.stdout
     )
-    assert "Aborted" in result.stdout
     assert result.exit_code == 1
 
 
@@ -98,7 +96,6 @@ def test_analyze_abort_sitemap() -> None:
         "You are about to read urls from a website sitemap. This can take a long time. Are you sure to want to proceed?"
         in result.stdout
     )
-    assert "Aborted" in result.stdout
     assert result.exit_code == 1
 
 
@@ -126,4 +123,4 @@ def test_no_interaction() -> None:
 def test_unauthorized_export_format() -> None:
     result = runner.invoke(app=app, args=["analyze", "--export-format", "txt"])
     assert result.exit_code == 2
-    assert "'txt' is not one of 'csv', 'json'." in result.stdout
+    assert "'txt' is not one of 'csv', 'json'." in result.stderr

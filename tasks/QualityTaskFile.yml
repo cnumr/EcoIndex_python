@@ -24,7 +24,7 @@ tasks:
   ruff:
     desc: Run ruff
     cmds:
-      - uv run ruff .
+      - uv run ruff check .
   
   quality-branch:
     desc: Run quality checks
