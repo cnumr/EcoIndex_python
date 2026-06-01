@@ -1,25 +1,31 @@
-[tool.poetry]
+[project]
 name = "ecoindex_compute"
 version = "5.9.0"
-readme = "README.md"
 description = "Ecoindex module provides a simple way to measure the Ecoindex score based on the 3 parameters: The DOM elements of the page, the size of the page and the number of external requests of the page"
-authors = ['Vincent Vatelot <vincent.vatelot@ik.me>']
-license = "Creative Commons BY-NC-ND"
-homepage = "http://www.ecoindex.fr"
-repository = "https://github.com/cnumr/EcoIndex_python"
-include = ["LICENSE"]
-packages = [
-    { include = "ecoindex/compute", from = "../../components" },
-    { include = "ecoindex/data", from = "../../components" },
-    { include = "ecoindex/models", from = "../../components" },
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "Creative Commons BY-NC-ND" }
+authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
+dependencies = [
+    "aiofile>=3.8.8",
+    "pydantic>=2.4.2",
+    "requests>=2.32.4",
 ]
 
-[tool.poetry.dependencies]
-aiofile = "^3.8.8"
-pydantic = "^2.4.2"
-python = "^3.10"
-requests = "^2.31.0"
+[project.urls]
+Homepage = "http://www.ecoindex.fr"
+Repository = "https://github.com/cnumr/EcoIndex_python"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-polylith-bricks"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.hooks.polylith-bricks]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ecoindex"]
+
+[tool.polylith.bricks]
+"../../components/ecoindex/compute" = "ecoindex/compute"
+"../../components/ecoindex/data" = "ecoindex/data"
+"../../components/ecoindex/models" = "ecoindex/models"

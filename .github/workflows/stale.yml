@@ -13,7 +13,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           stale-issue-message: This issue has been marked as inactive because it hasn't been updated for 30 days. If it's not updated within 7 days, it will be automatically closed. To prevent it from being closed, you can add the `keep open` label.

@@ -1,5 +1,7 @@
 import json
+from unittest.mock import MagicMock
 
+import pytest
 from ecoindex.exceptions.scraper import EcoindexScraperStatusException
 from ecoindex.models import ScreenShot, WindowSize
 from ecoindex.scraper import EcoindexScraper
@@ -127,28 +129,18 @@ def test_get_request_size():
     )
 
 
+def _mock_page_response(
+    *, status: int, headers: dict[str, str], status_text: str = ""
+) -> MagicMock:
+    response = MagicMock()
+    response.status = status
+    response.headers = headers
+    response.status_text = status_text
+    return response
+
+
+@pytest.mark.asyncio
 async def test_check_page_response():
-    mock_stripped_har_entry = (
-        {
-            "response": {
-                "status": 200,
-                "headers": {"content-type": "audio/mpeg"},
-            }
-        },
-        {
-            "response": {
-                "status": 404,
-                "headers": {"content-type": "text/html"},
-                "status_text": "Not Found",
-            }
-        },
-        {
-            "response": {
-                "status": 200,
-                "headers": {"content-type": "text/html"},
-            }
-        },
-    )
     url = "https://www.example.com"
     window_size = WindowSize(width=800, height=600)
     wait_before_scroll = 2
@@ -169,23 +161,37 @@ async def test_check_page_response():
         screenshot_gid=screenshot_gid,
         page_load_timeout=page_load_timeout,
     )
-    try:
-        scraper.check_page_response(mock_stripped_har_entry[0])
-    except TypeError as e:
-        assert str(e) == {
-            "mimetype": "audio/mpeg",
-            "message": (
-                "This resource is not " "a standard page with mimeType 'text/html'"
-            ),
-        }
 
-    try:
-        scraper.check_page_response(mock_stripped_har_entry[1])
-    except EcoindexScraperStatusException as e:
-        assert str(e) == {
-            "url": "https://www.example.com",
-            "status": 404,
-            "message": mock_stripped_har_entry[1]["response"]["status_text"],
-        }
+    with pytest.raises(TypeError) as type_error:
+        await scraper.check_page_response(
+            _mock_page_response(
+                status=200, headers={"content-type": "audio/mpeg"}
+            )
+        )
+    assert type_error.value.args[0] == {
+        "mimetype": "audio/mpeg",
+        "message": (
+            "This resource is not a standard page with mimeType 'text/html'"
+        ),
+    }
 
-    assert scraper.check_page_response(mock_stripped_har_entry[2]) is None
+    with pytest.raises(EcoindexScraperStatusException) as status_error:
+        await scraper.check_page_response(
+            _mock_page_response(
+                status=404,
+                headers={"content-type": "text/html"},
+                status_text="Not Found",
+            )
+        )
+    assert status_error.value.url == url
+    assert status_error.value.status == 404
+    assert status_error.value.message == "Not Found"
+
+    assert (
+        await scraper.check_page_response(
+            _mock_page_response(
+                status=200, headers={"content-type": "text/html"}
+            )
+        )
+        is None
+    )

@@ -4,27 +4,27 @@ tasks:
   tests:
     desc: Run tests
     cmds:
-      - poetry run pytest
+      - uv run pytest
 
   tests-coverage:
     desc: Run tests with coverage
     cmds:
-      - poetry run pytest --cov-report "xml:coverage.xml" --cov=. test
+      - uv run pytest --cov-report "xml:coverage.xml" --cov=. test
     
   tests-coverage-branch:
     desc: Run tests with coverage for current branch
     cmds:
-      - poetry run pytest --cov-report "xml:coverage.xml" --cov=. --picked --mode=branch test
+      - uv run pytest --cov-report "xml:coverage.xml" --cov=. --picked --mode=branch test
 
   mypy:
     desc: Run mypy
     cmds:
-      - poetry run mypy .
+      - uv run mypy .
   
   ruff:
     desc: Run ruff
     cmds:
-      - poetry run ruff .
+      - uv run ruff check .
   
   quality-branch:
     desc: Run quality checks

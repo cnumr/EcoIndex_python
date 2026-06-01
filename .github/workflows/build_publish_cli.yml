@@ -29,49 +29,48 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Install Task
         uses: arduino/setup-task@v2
         with:
           version: 3.x
 
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v2
-
-      - name: Install poetry build project
-        run: pip install poetry-multiproject-plugin
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Bump version
         run: task cli:bump -- ${{ github.event.inputs.bump }}
 
       - name: Build
-        run: task cli:poetry:build
+        run: task cli:uv:build
 
       - name: Upload version to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: version
           path: bases/ecoindex/cli/VERSION
 
       - name: Upload pyproject.toml to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pyproject
           path: projects/ecoindex_cli/pyproject.toml
 
       - name: Upload dist folder
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: projects/ecoindex_cli/dist
 
       - name: Output version
         id: version
-        run: echo "version=$(task cli:poetry:version-short)" >> $GITHUB_OUTPUT
+        run: echo "version=$(task cli:uv:version-short)" >> $GITHUB_OUTPUT
 
       - name: Output wheel
         id: wheel
@@ -88,36 +87,36 @@ jobs:
     needs: python_project
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download dist from artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: dist
           path: projects/ecoindex_cli/dist
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v6
         with:
           images: vvatelot/ecoindex-cli
 
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v7
         with:
-          context: projects/ecoindex_cli
+          context: .
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }},vvatelot/ecoindex-cli:${{ needs.python_project.outputs.version }},${{ !contains(inputs.bump, 'pre') && 'vvatelot/ecoindex-cli:latest' || '' }}
@@ -131,7 +130,7 @@ jobs:
     needs: python_project
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Task
         uses: arduino/setup-task@v2
@@ -139,7 +138,7 @@ jobs:
           version: 3.x
 
       - name: Download dist from artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: dist
           path: projects/ecoindex_cli/dist
@@ -153,18 +152,17 @@ jobs:
       - name: Copy pyproject.toml to the project
         run: cp /tmp/pyproject.toml projects/ecoindex_cli/pyproject.toml
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v2
-
-      - name: Login to Pypi
-        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: task cli:pypi:publish
 
   release:
@@ -173,19 +171,19 @@ jobs:
     needs: [python_project, docker_image, pypi_package]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Git pull
         run: git pull
 
       - name: Download pyproject.toml to a temporary file
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: pyproject
           path: /tmp
 
       - name: Download VERSION to a temporary file
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: version
           path: /tmp
@@ -203,7 +201,7 @@ jobs:
           regex: '^v[0-9]+\.[0-9]+\.[0-9]+@cli$'
 
       - name: Commit files
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           message: "chore(cli): Bump CLI version to ${{ needs.python_project.outputs.version }}"
           tag: v${{ needs.python_project.outputs.version }}@cli

@@ -50,8 +50,8 @@ Here is a diagram of the dependencies between the projects:
 
 ### Requirements
 
-- [Python 3.9+](https://www.python.org/downloads/)
-- [Poetry](https://python-poetry.org/docs/#installation)
+- [Python 3.10+](https://www.python.org/downloads/)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - [Task](https://taskfile.dev/#/installation)
 - [Docker](https://docs.docker.com/get-docker/) (optional)
 
@@ -60,7 +60,7 @@ Here is a diagram of the dependencies between the projects:
 To install main dependencies, run:
 
 ```bash
-task poetry:install
+task uv:install
 ```
 
 ### Usage

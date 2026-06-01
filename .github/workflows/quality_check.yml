@@ -15,27 +15,22 @@ jobs:
     name: Validate project quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Task
-        uses: arduino/setup-task@v1
+        uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Install poetry and plugins
-        run: |
-          curl -sSL https://install.python-poetry.org | python -
-          poetry config virtualenvs.create true
-          poetry self add poetry-multiproject-plugin
-          poetry self add poetry-polylith-plugin
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
       - name: Install dependencies
-        run: |
-          poetry install
+        run: uv sync --all-groups
       - name: Validate polylith project
-        run: |
-          task project-check
+        run: task project-check
       - name: Validate code quality
-        run: |
-          task quality
+        run: task quality
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:

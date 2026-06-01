@@ -1,42 +1,51 @@
 version: '3'
 
 includes:
-  poetry: ../../tasks/PoetryTaskfile.yml
-  docker: ../../tasks/DockerTaskfile.yml
-  pypi: ../../tasks/PypiTaskFile.yml
+  uv:
+    taskfile: ../../tasks/UvTaskfile.yml
+    dir: ../..
+  docker:
+    taskfile: ../../tasks/DockerTaskfile.yml
+    dir: ../..
+  pypi:
+    taskfile: ../../tasks/PypiTaskFile.yml
+    dir: ../..
 
 vars:
   PROJECT_NAME: cli
+  PACKAGE_NAME: ecoindex_cli
+  OUT_DIR: projects/ecoindex_cli/dist
 
 tasks:
   bump:
     desc: Bump the CLI version with rules:major, minor, patch, premajor, preminor, prepatch or prerelease.
     cmds:
-      - task: poetry:bump
+      - task: uv:bump
         vars:
-          VERSION_FILE_PATH: "../../bases/ecoindex/cli/VERSION"
+          VERSION_FILE_PATH: "bases/ecoindex/cli/VERSION"
           VERSION_RULE: "{{.CLI_ARGS}}"
+    dir: ../..
     silent: true
   
   docker-build:
     desc: Build the docker image
-    deps: [poetry:build]
+    deps: [uv:build]
     vars:
       VERSION:
-        sh: poetry version -s
+        sh: cd ../.. && uv version --package ecoindex_cli --short
     cmds:
       - task: docker:build
         vars:
           VERSION: "{{.VERSION}}"
           NAME: "{{.PROJECT_NAME}}"
-          OPTIONS: --build-arg="wheel=ecoindex_cli-{{.VERSION}}-py3-none-any.whl"
+          OPTIONS: -f projects/ecoindex_cli/dockerfile --build-arg="wheel=ecoindex_cli-{{.VERSION}}-py3-none-any.whl"
     silent: true
   
   docker-push:
     desc: Push the docker image
     vars:
       VERSION:
-        sh: poetry version -s
+        sh: cd ../.. && uv version --package ecoindex_cli --short
     cmds:
       - task: docker:push
         vars:

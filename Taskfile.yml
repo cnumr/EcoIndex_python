@@ -17,26 +17,34 @@ includes:
     taskfile: ./projects/ecoindex_scraper/Taskfile.yml
     dir: ./projects/ecoindex_scraper/
 
-  poetry: ./tasks/PoetryTaskfile.yml
+  uv:
+    taskfile: ./tasks/UvTaskfile.yml
 
-  quality: ./tasks/QualityTaskFile.yml
+  quality:
+    taskfile: ./tasks/QualityTaskFile.yml
+
+vars:
+  PACKAGE_NAME: ecoindex-monorepo
+  OUT_DIR: dist
 
 tasks:
   project-check:
     desc: Check polylith structure project
     cmds:
-      - poetry poly check
+      - uv run poly check
 
   project-sync:
     desc: Sync polylith structure project
     cmds:
-      - poetry poly sync
+      - uv run poly sync
 
   bump:
     desc: Bump the Main project version with rules:major, minor, patch, premajor, preminor, prepatch or prerelease.
     cmds:
-      - task: poetry:bump
+      - task: uv:bump
         vars:
+          PROJECT_NAME: monorepo
+          PACKAGE_NAME: ecoindex-monorepo
           VERSION_FILE_PATH: "VERSION"
           VERSION_RULE: "{{.CLI_ARGS}}"
     silent: true

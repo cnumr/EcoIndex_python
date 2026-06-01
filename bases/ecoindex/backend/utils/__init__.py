@@ -45,7 +45,7 @@ async def get_sort_parameters(query_params: list[str], model: BaseModel) -> list
     result = []
 
     for query_param in query_params:
-        pattern = re.compile("^\w+:(asc|desc)$")  # type: ignore
+        pattern = re.compile(r"^\w+:(asc|desc)$")
 
         if not re.fullmatch(pattern, query_param):
             validation_error.append(

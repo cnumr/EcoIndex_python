@@ -6,7 +6,7 @@
 !db
 !docker
 !pyproject.toml
-!poetry.lock
+!uv.lock
 !settings.py
 !worker
 !dist

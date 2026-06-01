@@ -1,36 +1,41 @@
-[tool.poetry]
+[project]
 name = "ecoindex_scraper"
 version = "3.16.0"
-readme = "README.md"
 description = "Ecoindex_scraper module provides a way to scrape data from given website while simulating a real web browser"
-authors = ['Vincent Vatelot <vincent.vatelot@ik.me>']
-license = "Creative Commons BY-NC-ND"
-homepage = "http://www.ecoindex.fr"
-repository = "https://github.com/cnumr/EcoIndex_python"
-include = ["LICENSE"]
-packages = [
-    { include = "ecoindex/compute", from = "../../components" },
-    { include = "ecoindex/data", from = "../../components" },
-    { include = "ecoindex/exceptions", from = "../../components" },
-    { include = "ecoindex/models", from = "../../components" },
-    { include = "ecoindex/scraper", from = "../../components" },
-    { include = "ecoindex/utils", from = "../../components" },
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "Creative Commons BY-NC-ND" }
+authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
+dependencies = [
+    "playwright>=1.39.0",
+    "playwright-stealth>=1.0.6",
+    "pydantic>=2.4.2",
+    "pyyaml>=6.0.1",
+    "setuptools>=69.5.1,<79.0.0",
+    "typing-extensions>=4.8.0",
+    "ua-generator>=2.0.5",
 ]
 
-[tool.poetry.dependencies]
-playwright = "^1.39.0"
-playwright-stealth = "^1.0.6"
-pydantic = "^2.4.2"
-python = "^3.10"
-typing-extensions = "^4.8.0"
-pyyaml = "^6.0.1"
-pillow = { version = "^12.2.0", optional = true }
-setuptools = ">=69.5.1,<79.0.0"
-ua-generator = "^2.0.5"
+[project.optional-dependencies]
+webp = ["pillow>=12.2.0"]
 
-[tool.poetry.extras]
-webp = ["pillow"]
+[project.urls]
+Homepage = "http://www.ecoindex.fr"
+Repository = "https://github.com/cnumr/EcoIndex_python"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-polylith-bricks"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.hooks.polylith-bricks]
+
+[tool.hatch.build.targets.wheel]
+packages = ["ecoindex"]
+
+[tool.polylith.bricks]
+"../../components/ecoindex/compute" = "ecoindex/compute"
+"../../components/ecoindex/data" = "ecoindex/data"
+"../../components/ecoindex/exceptions" = "ecoindex/exceptions"
+"../../components/ecoindex/models" = "ecoindex/models"
+"../../components/ecoindex/scraper" = "ecoindex/scraper"
+"../../components/ecoindex/utils" = "ecoindex/utils"

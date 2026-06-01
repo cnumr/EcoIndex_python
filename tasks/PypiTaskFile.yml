@@ -2,7 +2,7 @@ version: '3'
 
 tasks:
   publish:
-    desc: Publish the project {{.PROJECT_NAME}} to pypi
+    desc: Publish the project {{.PROJECT_NAME}} to PyPI
     cmds:
-      - poetry publish
+      - uv publish --directory {{.OUT_DIR}}
     silent: true

@@ -1,9 +1,17 @@
 {
     "name": "EcoIndex Python",
-    "image": "mcr.microsoft.com/devcontainers/python:1-3.12",
-    "features": {
-        "ghcr.io/audacioustux/devcontainers/taskfile": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached",
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+    ],
+    "runArgs": ["--name=ecoindex-python-dev"],
+    "containerEnv": {
+        "UV_LINK_MODE": "copy"
     },
     "customizations": {
         "vscode": {
@@ -17,7 +25,8 @@
                 "mhutchie.git-graph"
             ],
             "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+                "python.terminal.activateEnvironment": true,
                 "python.formatting.provider": "black",
                 "python.linting.enabled": true,
                 "python.linting.ruffEnabled": true,
@@ -28,6 +37,6 @@
             }
         }
     },
-    "postCreateCommand": "pipx install poetry==1.8.5 && poetry self add poetry-multiproject-plugin && poetry self add poetry-polylith-plugin",
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
     "remoteUser": "vscode"
 }
