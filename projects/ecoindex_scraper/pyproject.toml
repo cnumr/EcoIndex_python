@@ -1,6 +1,6 @@
 [project]
 name = "ecoindex_scraper"
-version = "3.16.0"
+version = "3.17.0"
 description = "Ecoindex_scraper module provides a way to scrape data from given website while simulating a real web browser"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
