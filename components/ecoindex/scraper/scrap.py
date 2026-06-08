@@ -3,17 +3,18 @@ import os
 from datetime import datetime
 from time import sleep
 from uuid import uuid4
+from typing import Any, cast
 
 from ua_generator.user_agent import UserAgent
 from ua_generator import generate as ua_generate
+
+from camoufox.async_api import AsyncCamoufox
 
 from ecoindex.compute import compute_ecoindex
 from ecoindex.exceptions.scraper import EcoindexScraperStatusException
 from ecoindex.models.compute import PageMetrics, Result, ScreenShot, WindowSize
 from ecoindex.models.scraper import MimetypeAggregation, RequestItem, Requests
 from ecoindex.utils.screenshots import convert_screenshot_to_webp, set_screenshot_rights
-from playwright._impl._api_structures import SetCookieParam, ViewportSize
-from playwright.async_api import async_playwright
 from typing_extensions import deprecated
 
 
@@ -30,7 +31,7 @@ class EcoindexScraper:
         page_load_timeout: int = 20,
         headless: bool = True,
         basic_auth: str | None = None,
-        cookies: list[SetCookieParam] = [],
+        cookies: list[dict[str, object]] = [],
         custom_headers: dict[str, str] = {},
         logger=None,
     ):
@@ -84,16 +85,13 @@ class EcoindexScraper:
         return self.all_requests.aggregation
 
     async def scrap_page(self) -> PageMetrics:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                headless=self.headless, args=["--disable-software-rasterizer"]
-            )
+        async with AsyncCamoufox(
+            headless=self.headless,
+            window=(self.window_size.width, self.window_size.height),
+        ) as browser_handle:
+            browser = cast(Any, browser_handle)
             self.context = await browser.new_context(
                 record_har_path=self.har_temp_file_path,
-                screen=ViewportSize(
-                    width=self.window_size.width,
-                    height=self.window_size.height,
-                ),
                 ignore_https_errors=True,
                 http_credentials={
                     "username": self.basic_auth.split(":")[0],
@@ -103,7 +101,7 @@ class EcoindexScraper:
                 else None,
                 extra_http_headers=self.custom_headers,
             )
-            await self.context.add_cookies(self.cookies)
+            await self.context.add_cookies(cast(Any, self.cookies))
             self.page = await self.context.new_page()
             response = await self.page.goto(self.url)
             await self.check_page_response(response)

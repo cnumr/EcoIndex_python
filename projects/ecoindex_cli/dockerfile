@@ -20,6 +20,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY projects/ecoindex_cli/dist/$wheel $wheel
 RUN pip install --no-cache-dir $wheel
 
-RUN playwright install chromium --with-deps
+RUN uv run camoufox fetch
 
 RUN rm -rf $wheel requirements.txt /tmp/dist /var/lib/{apt,dpkg,cache,log}/

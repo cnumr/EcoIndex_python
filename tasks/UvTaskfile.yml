@@ -60,9 +60,9 @@ tasks:
       - uv version --package {{.PACKAGE_NAME}} --short
     silent: true
 
-  install-playwright:
-    desc: Install playwright
+  install-camoufox:
+    desc: Install Camoufox
     cmds:
-      - uv run playwright install chromium --with-deps
+      - uv run camoufox fetch
     silent: true
     interactive: true

@@ -13,6 +13,6 @@ RUN uv sync --package ecoindex_scraper --frozen --no-dev --no-editable
 
 ENV PATH="/code/.venv/bin:$PATH"
 
-RUN playwright install chromium --with-deps
+RUN uv run camoufox fetch
 
 RUN rm -rf /tmp/dist /var/lib/{apt,dpkg,cache,log}/

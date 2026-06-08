@@ -20,7 +20,6 @@ from ecoindex.models.enums import TaskStatus
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.scraper.scrap import EcoindexScraper
 from ecoindex.worker_component import app
-from playwright._impl._errors import Error as WebDriverException
 from sentry_sdk import init as sentry_init
 
 if Settings().GLITCHTIP_DSN:
@@ -97,48 +96,6 @@ async def async_ecoindex_task(
             ),
         )
 
-    except WebDriverException as exc:
-        if exc.message and "ERR_NAME_NOT_RESOLVED" in exc.message:
-            return QueueTaskResult(
-                status=TaskStatus.FAILURE,
-                error=QueueTaskError(
-                    url=url,  # type: ignore
-                    exception=EcoindexHostUnreachable.__name__,
-                    status_code=502,
-                    message=(
-                        "This host is unreachable (error 502). "
-                        "Are you really sure of this url? 🤔"
-                    ),
-                    detail=None,
-                ),
-            )
-
-        if exc.message and "ERR_CONNECTION_TIMED_OUT" in exc.message:
-            return QueueTaskResult(
-                status=TaskStatus.FAILURE,
-                error=QueueTaskError(
-                    url=url,  # type: ignore
-                    exception=EcoindexTimeout.__name__,
-                    status_code=504,
-                    message=(
-                        "Timeout reached when requesting this url (error 504). "
-                        "This is probably a temporary issue. 😥"
-                    ),
-                    detail=None,
-                ),
-            )
-
-        return QueueTaskResult(
-            status=TaskStatus.FAILURE,
-            error=QueueTaskError(
-                url=url,  # type: ignore
-                exception=type(exc).__name__,
-                status_code=500,
-                message=str(exc.message) if exc.message else "",
-                detail=await format_exception_response(exception=exc),
-            ),
-        )
-
     except TypeError as exc:
         return QueueTaskResult(
             status=TaskStatus.FAILURE,
@@ -160,6 +117,50 @@ async def async_ecoindex_task(
                 exception=EcoindexStatusError.__name__,
                 message=exc.message,
                 detail={"status": exc.status},
+            ),
+        )
+
+    except Exception as exc:
+        message = getattr(exc, "message", str(exc))
+
+        if message and "ERR_NAME_NOT_RESOLVED" in message:
+            return QueueTaskResult(
+                status=TaskStatus.FAILURE,
+                error=QueueTaskError(
+                    url=url,  # type: ignore
+                    exception=EcoindexHostUnreachable.__name__,
+                    status_code=502,
+                    message=(
+                        "This host is unreachable (error 502). "
+                        "Are you really sure of this url? 🤔"
+                    ),
+                    detail=None,
+                ),
+            )
+
+        if message and "ERR_CONNECTION_TIMED_OUT" in message:
+            return QueueTaskResult(
+                status=TaskStatus.FAILURE,
+                error=QueueTaskError(
+                    url=url,  # type: ignore
+                    exception=EcoindexTimeout.__name__,
+                    status_code=504,
+                    message=(
+                        "Timeout reached when requesting this url (error 504). "
+                        "This is probably a temporary issue. 😥"
+                    ),
+                    detail=None,
+                ),
+            )
+
+        return QueueTaskResult(
+            status=TaskStatus.FAILURE,
+            error=QueueTaskError(
+                url=url,  # type: ignore
+                exception=type(exc).__name__,
+                status_code=500,
+                message=message,
+                detail=await format_exception_response(exception=exc),
             ),
         )
 
@@ -202,7 +203,7 @@ async def async_ecoindex_batch_import_task(
         return QueueTaskResult(
             status=TaskStatus.FAILURE,
             error=QueueTaskError(
-                url=None,  # type: ignore
+                url=None,
                 exception=type(exc).__name__,
                 status_code=500,
                 message=str(exc.message) if exc.message else "",  # type: ignore
