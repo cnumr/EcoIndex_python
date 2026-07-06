@@ -1,6 +1,7 @@
 from asyncio import run
 from os import getcwd
 from urllib.parse import urlparse
+from uuid import UUID
 
 from ecoindex.backend.utils import check_quota, format_exception_response
 from ecoindex.config.settings import Settings
@@ -19,30 +20,31 @@ from ecoindex.models import ScreenShot, WindowSize
 from ecoindex.models.enums import TaskStatus
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.scraper.scrap import EcoindexScraper
-from ecoindex.worker_component import app
 from playwright._impl._errors import Error as WebDriverException
+from rq import get_current_job
 from sentry_sdk import init as sentry_init
 
 if Settings().GLITCHTIP_DSN:
     sentry_init(Settings().GLITCHTIP_DSN)
 
 
-@app.task(
-    name="ecoindex.analysis",
-    bind=True,
-    autoretry_for=(Exception,),
-    retry_backoff=5,
-    retry_kwargs={"max_retries": 5},
-    timezone=Settings().TZ,
-    queue="ecoindex",
-    dont_autoretry_for=[EcoindexScraperStatusException, TypeError],
-)
+def _get_task_id() -> UUID:
+    job = get_current_job()
+    if job is None:
+        raise RuntimeError("No RQ job context available")
+    return UUID(job.id)
+
+
 def ecoindex_task(
-    self, url: str, width: int, height: int, custom_headers: dict[str, str]
+    url: str, width: int, height: int, custom_headers: dict[str, str]
 ) -> str:
     queue_task_result = run(
         async_ecoindex_task(
-            self, url=url, width=width, height=height, custom_headers=custom_headers
+            task_id=_get_task_id(),
+            url=url,
+            width=width,
+            height=height,
+            custom_headers=custom_headers,
         )
     )
 
@@ -50,7 +52,7 @@ def ecoindex_task(
 
 
 async def async_ecoindex_task(
-    self,
+    task_id: UUID,
     url: str,
     width: int,
     height: int,
@@ -68,7 +70,7 @@ async def async_ecoindex_task(
             wait_after_scroll=Settings().WAIT_AFTER_SCROLL,
             wait_before_scroll=Settings().WAIT_BEFORE_SCROLL,
             screenshot=ScreenShot(
-                id=str(self.request.id), folder=f"{getcwd()}/screenshots/v1"
+                id=str(task_id), folder=f"{getcwd()}/screenshots/v1"
             )
             if Settings().ENABLE_SCREENSHOT
             else None,
@@ -79,7 +81,7 @@ async def async_ecoindex_task(
 
         db_result = await save_ecoindex_result_db(
             session=session,
-            id=self.request.id,
+            id=task_id,
             ecoindex_result=ecoindex,
         )
 
@@ -164,13 +166,7 @@ async def async_ecoindex_task(
         )
 
 
-@app.task(
-    name="ecoindex.batch_import",
-    timezone=Settings().TZ,
-    queue="ecoindex_batch",
-    bind=True,
-)
-def ecoindex_batch_import_task(self, results: list[dict], source: str):
+def ecoindex_batch_import_task(results: list[dict], source: str) -> str:
     queue_task_result = run(
         async_ecoindex_batch_import_task(
             results=[ApiEcoindex.model_validate(result) for result in results],

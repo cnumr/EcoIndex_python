@@ -1,10 +1,8 @@
-from json import loads
 from typing import Annotated
 from urllib.parse import urlparse, urlunparse
 
 import idna
 import requests
-from celery.result import AsyncResult
 from ecoindex.backend.dependencies.validation import validate_api_key_batch
 from ecoindex.backend.models.dependencies_parameters.id import IdParameter
 from ecoindex.backend.utils import check_quota
@@ -17,10 +15,22 @@ from ecoindex.models.response_examples import (
     example_daily_limit_response,
     example_host_unreachable,
 )
-from ecoindex.models.tasks import QueueTaskApi, QueueTaskApiBatch, QueueTaskResult
+from ecoindex.models.tasks import QueueTaskApi, QueueTaskApiBatch
 from ecoindex.scraper.scrap import EcoindexScraper
 from ecoindex.worker.tasks import ecoindex_batch_import_task, ecoindex_task
-from ecoindex.worker_component import app as task_app
+from ecoindex.worker_component import (
+    NoSuchJobError,
+    cancel_job,
+    ecoindex_batch_queue,
+    ecoindex_queue,
+    fetch_job,
+    get_queue_for_job,
+    get_queue_position,
+    get_retry_policy,
+    get_tasks_in_progress,
+    map_job_status_to_task_status,
+    parse_job_result,
+)
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.params import Body
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -68,6 +78,18 @@ def convert_url_to_punycode(url: str) -> str:
     except (idna.IDNAError, UnicodeError):
         # If conversion fails, return the original URL
         return url
+
+
+def _enqueue_settings(*, with_retry: bool = True) -> dict:
+    settings = Settings()
+    enqueue_settings = {
+        "result_ttl": settings.RQ_RESULT_TTL,
+        "failure_ttl": settings.RQ_FAILURE_TTL,
+        "job_timeout": settings.RQ_JOB_TIMEOUT,
+    }
+    if with_retry:
+        enqueue_settings["retry"] = get_retry_policy()
+    return enqueue_settings
 
 
 @router.post(
@@ -142,14 +164,16 @@ async def add_ecoindex_analysis_task(
             detail=f"The URL {web_page.url} is unreachable. Are you really sure of this url? 🤔 ({e.response.status_code if e.response else ''})",
         )
 
-    task_result = ecoindex_task.delay(  # type: ignore
+    job = ecoindex_queue.enqueue(
+        ecoindex_task,
         url=str(web_page.url),
         width=web_page.width,
         height=web_page.height,
         custom_headers=headers,
+        **_enqueue_settings(),
     )
 
-    return task_result.id
+    return job.id
 
 
 @router.get(
@@ -166,23 +190,35 @@ async def get_ecoindex_analysis_task_by_id(
     response: Response,
     id: IdParameter,
 ) -> QueueTaskApi:
-    t = AsyncResult(id=str(id), app=task_app)
+    try:
+        job = fetch_job(str(id))
+    except NoSuchJobError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        ) from exc
+
+    queue = get_queue_for_job(job)
+    task_status = map_job_status_to_task_status(job)
+    result = parse_job_result(job)
 
     task_response = QueueTaskApi(
-        id=str(t.id),
-        status=t.state,
+        id=job.id,
+        status=task_status,
+        queue_position=get_queue_position(job, queue),
+        tasks_in_progress=get_tasks_in_progress(queue),
     )
 
-    if t.state == TaskStatus.PENDING:
+    if task_status == TaskStatus.PENDING:
         response.status_code = status.HTTP_425_TOO_EARLY
 
         return task_response
 
-    if t.state == TaskStatus.SUCCESS:
-        task_response.ecoindex_result = QueueTaskResult(**loads(t.result))
+    if task_status == TaskStatus.SUCCESS:
+        task_response.ecoindex_result = result
 
-    if t.state == TaskStatus.FAILURE:
-        task_response.task_error = t.info
+    if task_status == TaskStatus.FAILURE:
+        task_response.task_error = result
 
     response.status_code = status.HTTP_200_OK
 
@@ -198,9 +234,13 @@ async def get_ecoindex_analysis_task_by_id(
 async def delete_ecoindex_analysis_task_by_id(
     id: IdParameter,
 ) -> None:
-    res = task_app.control.revoke(id, terminate=True, signal="SIGKILL")
-
-    return res
+    try:
+        cancel_job(str(id))
+    except NoSuchJobError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        ) from exc
 
 
 @router.post(
@@ -227,12 +267,14 @@ async def add_ecoindex_analysis_task_batch(
     ],
     batch_key: str = Depends(validate_api_key_batch),
 ):
-    task_result = ecoindex_batch_import_task.delay(  # type: ignore
+    job = ecoindex_batch_queue.enqueue(
+        ecoindex_batch_import_task,
         results=[result.model_dump() for result in results],
         source=batch_key["source"],  # type: ignore
+        **_enqueue_settings(with_retry=False),
     )
 
-    return task_result.id
+    return job.id
 
 
 @router.get(
@@ -250,14 +292,22 @@ async def get_ecoindex_analysis_batch_task_by_id(
     id: IdParameter,
     _: str = Depends(validate_api_key_batch),
 ) -> QueueTaskApiBatch:
-    t = AsyncResult(id=str(id), app=task_app)
+    try:
+        job = fetch_job(str(id))
+    except NoSuchJobError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        ) from exc
+
+    task_status = map_job_status_to_task_status(job)
 
     task_response = QueueTaskApiBatch(
-        id=str(t.id),
-        status=t.state,
+        id=job.id,
+        status=task_status,
     )
 
-    if t.state == TaskStatus.PENDING:
+    if task_status == TaskStatus.PENDING:
         response.status_code = status.HTTP_425_TOO_EARLY
 
     return task_response

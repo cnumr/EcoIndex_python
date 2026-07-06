@@ -29,6 +29,7 @@ RUN playwright install chromium --with-deps
 RUN rm -rf $wheel requirements.txt /tmp/dist /var/lib/{apt,dpkg,cache,log}/
 
 COPY projects/ecoindex_api/docker/worker/entrypoint.sh /usr/bin/entrypoint
-RUN chmod +x /usr/bin/entrypoint
+COPY projects/ecoindex_api/scripts/start_rq_workers.sh /usr/bin/start_rq_workers.sh
+RUN chmod +x /usr/bin/entrypoint /usr/bin/start_rq_workers.sh
 
 ENTRYPOINT [ "/usr/bin/entrypoint" ]
