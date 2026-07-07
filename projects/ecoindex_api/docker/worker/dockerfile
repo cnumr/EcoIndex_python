@@ -29,6 +29,8 @@ RUN uv run camoufox fetch
 RUN rm -rf $wheel requirements.txt /tmp/dist /var/lib/{apt,dpkg,cache,log}/
 
 COPY projects/ecoindex_api/docker/worker/entrypoint.sh /usr/bin/entrypoint
-RUN chmod +x /usr/bin/entrypoint
+COPY projects/ecoindex_api/scripts/start_rq_workers.sh /usr/bin/start_rq_workers.sh
+COPY projects/ecoindex_api/scripts/clean_stale_rq_workers.py /usr/bin/clean_stale_rq_workers.py
+RUN chmod +x /usr/bin/entrypoint /usr/bin/start_rq_workers.sh
 
 ENTRYPOINT [ "/usr/bin/entrypoint" ]

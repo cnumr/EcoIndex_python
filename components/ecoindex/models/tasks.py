@@ -46,6 +46,15 @@ class QueueTaskApi(BaseModel):
         default=...,
         title="Status of the current task. Can be PENDING, FAILURE, SUCCESS",
     )
+    queue_position: int | None = Field(
+        default=None,
+        title="Position of the task in the waiting queue (0 = next to run)",
+        description="Null when the task is running or already completed.",
+    )
+    tasks_in_progress: int = Field(
+        default=0,
+        title="Number of tasks currently being processed on this queue",
+    )
     ecoindex_result: QueueTaskResult | None = Field(
         default=None, title="Result of the Ecoindex analysis"
     )

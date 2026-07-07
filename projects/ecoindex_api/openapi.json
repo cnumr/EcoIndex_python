@@ -25,7 +25,7 @@
                 "type": "null"
               }
             ],
-            "default": "5.4.3",
+            "default": "5.10.0",
             "description": "Is the version of the ecoindex used to compute the score",
             "title": "Ecoindex version"
           },
@@ -155,6 +155,19 @@
             "title": "Page size",
             "type": "number"
           },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "ecoindex.fr",
+            "description": "Source of the analysis",
+            "title": "Source of the analysis"
+          },
           "url": {
             "description": "Url of the analysed page",
             "examples": [
@@ -218,6 +231,32 @@
         "title": "BadgeTheme",
         "type": "string"
       },
+      "Body_Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post": {
+        "properties": {
+          "custom_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {},
+            "description": "Custom headers to add to the request",
+            "title": "Custom Headers",
+            "type": "object"
+          },
+          "web_page": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WebPage"
+              }
+            ],
+            "title": "Web page to analyze defined by its url and its screen resolution"
+          }
+        },
+        "required": [
+          "web_page"
+        ],
+        "title": "Body_Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post",
+        "type": "object"
+      },
       "Ecoindex": {
         "properties": {
           "ecoindex_version": {
@@ -229,7 +268,7 @@
                 "type": "null"
               }
             ],
-            "default": "5.4.3",
+            "default": "5.10.0",
             "description": "Is the version of the ecoindex used to compute the score",
             "title": "Ecoindex version"
           },
@@ -335,7 +374,8 @@
           "C",
           "D",
           "E",
-          "F"
+          "F",
+          "G"
         ],
         "title": "Grade",
         "type": "string"
@@ -443,38 +483,7 @@
         "title": "Host",
         "type": "object"
       },
-      "PageApiEcoindexes-Input": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/ApiEcoindex"
-            },
-            "title": "Items",
-            "type": "array"
-          },
-          "page": {
-            "title": "Page",
-            "type": "integer"
-          },
-          "size": {
-            "title": "Size",
-            "type": "integer"
-          },
-          "total": {
-            "title": "Total",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "items",
-          "total",
-          "page",
-          "size"
-        ],
-        "title": "PageApiEcoindexes",
-        "type": "object"
-      },
-      "PageApiEcoindexes-Output": {
+      "PageApiEcoindexes": {
         "properties": {
           "items": {
             "items": {
@@ -536,12 +545,12 @@
         "title": "PageHosts",
         "type": "object"
       },
-      "QueueTaskApi-Input": {
+      "QueueTaskApi": {
         "properties": {
           "ecoindex_result": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/QueueTaskResult-Input"
+                "$ref": "#/components/schemas/QueueTaskResult"
               },
               {
                 "type": "null"
@@ -552,6 +561,18 @@
           "id": {
             "title": "Identifier of the current. This identifier will become the identifier of the analysis",
             "type": "string"
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Null when the task is running or already completed.",
+            "title": "Position of the task in the waiting queue (0 = next to run)"
           },
           "status": {
             "title": "Status of the current task. Can be PENDING, FAILURE, SUCCESS",
@@ -565,6 +586,11 @@
               }
             ],
             "title": "Detail of the error encountered by the task in case of Failure"
+          },
+          "tasks_in_progress": {
+            "default": 0,
+            "title": "Number of tasks currently being processed on this queue",
+            "type": "integer"
           }
         },
         "required": [
@@ -574,19 +600,8 @@
         "title": "QueueTaskApi",
         "type": "object"
       },
-      "QueueTaskApi-Output": {
+      "QueueTaskApiBatch": {
         "properties": {
-          "ecoindex_result": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/QueueTaskResult-Output"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result of the Ecoindex analysis"
-          },
           "id": {
             "title": "Identifier of the current. This identifier will become the identifier of the analysis",
             "type": "string"
@@ -609,7 +624,7 @@
           "id",
           "status"
         ],
-        "title": "QueueTaskApi",
+        "title": "QueueTaskApiBatch",
         "type": "object"
       },
       "QueueTaskError": {
@@ -663,47 +678,7 @@
         "title": "QueueTaskError",
         "type": "object"
       },
-      "QueueTaskResult-Input": {
-        "properties": {
-          "detail": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Result"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Result of the ecoindex analysis once it was successfuly completed"
-          },
-          "error": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/QueueTaskError"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Detail of the ecoindex error if it is not successful"
-          },
-          "status": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "While the task is pending or the analysis is running, it is null. But once the analysis is complete, it should return SUCCESS or FAILURE.",
-            "title": "Status of the ecoindex analysis."
-          }
-        },
-        "title": "QueueTaskResult",
-        "type": "object"
-      },
-      "QueueTaskResult-Output": {
+      "QueueTaskResult": {
         "properties": {
           "detail": {
             "anyOf": [
@@ -767,7 +742,7 @@
                 "type": "null"
               }
             ],
-            "default": "5.4.3",
+            "default": "5.10.0",
             "description": "Is the version of the ecoindex used to compute the score",
             "title": "Ecoindex version"
           },
@@ -994,7 +969,7 @@
   "info": {
     "description": "Ecoindex API enables you to perform ecoindex analysis of given web pages",
     "title": "Ecoindex API",
-    "version": "3.1.0"
+    "version": "3.12.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1094,25 +1069,20 @@
         ]
       }
     },
-    "/v1/tasks/ecoindexes": {
+    "/v1/tasks/ecoindexes/": {
       "post": {
         "description": "This submits a ecoindex analysis task to the engine",
-        "operationId": "Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes_post",
+        "operationId": "Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post",
         "requestBody": {
           "content": {
             "application/json": {
-              "example": {
-                "height": 1080,
-                "url": "https://www.ecoindex.fr/",
-                "width": 1920
-              },
               "schema": {
                 "allOf": [
                   {
-                    "$ref": "#/components/schemas/WebPage"
+                    "$ref": "#/components/schemas/Body_Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post"
                   }
                 ],
-                "title": "Web page to analyze defined by its url and its screen resolution"
+                "title": "Body"
               }
             }
           },
@@ -1123,7 +1093,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response 201 Add New Ecoindex Analysis Task To The Waiting Queue V1 Tasks Ecoindexes Post",
+                  "title": "Response 201 Add New Ecoindex Analysis Task To The Waiting Queue V1 Tasks Ecoindexes  Post",
                   "type": "string"
                 }
               }
@@ -1134,7 +1104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "title": "Response 403 Add New Ecoindex Analysis Task To The Waiting Queue V1 Tasks Ecoindexes Post",
+                  "title": "Response 403 Add New Ecoindex Analysis Task To The Waiting Queue V1 Tasks Ecoindexes  Post",
                   "type": "string"
                 }
               }
@@ -1184,9 +1154,156 @@
               }
             },
             "description": "You have reached the daily limit"
+          },
+          "521": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "The URL http://localhost is unreachable. Are you really sure of this url? \ud83e\udd14"
+                }
+              }
+            },
+            "description": "Host unreachable"
           }
         },
         "summary": "Add New Ecoindex Analysis Task To The Waiting Queue",
+        "tags": [
+          "Tasks"
+        ]
+      }
+    },
+    "/v1/tasks/ecoindexes/batch": {
+      "post": {
+        "description": "This save ecoindex analysis from external source in batch mode. Limited to 100 entries at a time",
+        "operationId": "Save_ecoindex_analysis_from_external_source_in_batch_mode_v1_tasks_ecoindexes_batch_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": true,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": [],
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/ApiEcoindex"
+                },
+                "maxItems": 100,
+                "minItems": 1,
+                "title": "List of ecoindex analysis results to save",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response 201 Save Ecoindex Analysis From External Source In Batch Mode V1 Tasks Ecoindexes Batch Post",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Identifier of the task that has been created in queue"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response 403 Save Ecoindex Analysis From External Source In Batch Mode V1 Tasks Ecoindexes Batch Post",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Ecoindex Analysis From External Source In Batch Mode",
+        "tags": [
+          "Tasks"
+        ]
+      }
+    },
+    "/v1/tasks/ecoindexes/batch/{id}": {
+      "get": {
+        "description": "This returns an ecoindex batch task result given by its unique identifier",
+        "operationId": "Get_ecoindex_analysis_batch_task_by_id_v1_tasks_ecoindexes_batch__id__get",
+        "parameters": [
+          {
+            "description": "Unique identifier of the ecoindex analysis",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Unique identifier of the ecoindex analysis",
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Api-Key",
+            "required": true,
+            "schema": {
+              "title": "X-Api-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueTaskApiBatch"
+                }
+              }
+            },
+            "description": "Get one ecoindex batch task result by its id"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "425": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueTaskApiBatch"
+                }
+              }
+            },
+            "description": "Too Early"
+          }
+        },
+        "summary": "Get Ecoindex Analysis Batch Task By Id",
         "tags": [
           "Tasks"
         ]
@@ -1257,7 +1374,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QueueTaskApi-Input"
+                  "$ref": "#/components/schemas/QueueTaskApi"
                 }
               }
             },
@@ -1277,7 +1394,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/QueueTaskApi-Input"
+                  "$ref": "#/components/schemas/QueueTaskApi"
                 }
               }
             },
@@ -1417,7 +1534,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageApiEcoindexes-Output"
+                  "$ref": "#/components/schemas/PageApiEcoindexes"
                 }
               }
             },
@@ -1427,7 +1544,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageApiEcoindexes-Input"
+                  "$ref": "#/components/schemas/PageApiEcoindexes"
                 }
               }
             },
@@ -1437,7 +1554,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageApiEcoindexes-Input"
+                  "$ref": "#/components/schemas/PageApiEcoindexes"
                 }
               }
             },
@@ -1531,7 +1648,6 @@
         },
         "summary": "Get Latest Results",
         "tags": [
-          "Ecoindex",
           "BFF"
         ]
       }
@@ -1631,7 +1747,6 @@
         },
         "summary": "Get Badge",
         "tags": [
-          "Ecoindex",
           "BFF"
         ]
       }
@@ -1705,7 +1820,6 @@
         },
         "summary": "Get Latest Results Redirect",
         "tags": [
-          "Ecoindex",
           "BFF"
         ]
       }
@@ -1880,9 +1994,28 @@
             "name": "q",
             "required": false,
             "schema": {
+              "deprecated": true,
               "description": "Filter by partial host name (replaced by `host`)",
               "title": "Q",
               "type": "string"
+            }
+          },
+          {
+            "description": "Host name you want to filter (can be partial)",
+            "in": "query",
+            "name": "host",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Host name you want to filter (can be partial)",
+              "title": "Host"
             }
           },
           {
@@ -1921,24 +2054,6 @@
               ],
               "description": "End date of the filter elements  (example: 2020-01-01)",
               "title": "Date To"
-            }
-          },
-          {
-            "description": "Host name you want to filter (can be partial)",
-            "in": "query",
-            "name": "host",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Host name you want to filter (can be partial)",
-              "title": "Host"
             }
           },
           {

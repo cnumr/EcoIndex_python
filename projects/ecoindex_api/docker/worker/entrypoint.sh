@@ -1,3 +1,3 @@
 #!/bin/sh
 
-celery -A ecoindex.worker.tasks worker --queues=ecoindex,ecoindex_batch
+exec /usr/bin/start_rq_workers.sh

@@ -9,10 +9,14 @@
     "mounts": [
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
-    "runArgs": ["--name=ecoindex-python-dev"],
+    "runArgs": [
+        "--name=ecoindex-python-dev",
+        "--add-host=host.docker.internal:host-gateway"
+    ],
     "containerEnv": {
         "UV_LINK_MODE": "copy"
     },
+    "forwardPorts": [8000, 8001, 9181],
     "customizations": {
         "vscode": {
             "extensions": [
