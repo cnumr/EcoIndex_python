@@ -33,7 +33,7 @@ def upgrade() -> None:
             sa.Column("water", sa.Float(), nullable=True),
             sa.Column("date", sa.DateTime(), nullable=True),
             sa.Column("page_type", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-            sa.Column("id", sqlmodel.sql.sqltypes.GUID(), nullable=True),
+            sa.Column("id", sa.Uuid(), nullable=True),
             sa.Column("host", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
             sa.Column("version", sa.Integer(), nullable=True),
             sa.Column("initial_ranking", sa.Integer(), nullable=False),

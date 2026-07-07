@@ -183,7 +183,7 @@ tasks:
     deps: [start-redis]
     cmds:
       - |
-        REDIS_DEV_HOST="$(uv run python scripts/wait_redis.py)"
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
         export REDIS_CACHE_HOST="$REDIS_DEV_HOST"
         export PYTHONPATH="bases:components"
         export RQ_WORKERS="{{.RQ_WORKERS}}"
@@ -197,7 +197,7 @@ tasks:
     deps: [start-redis]
     cmds:
       - |
-        export REDIS_CACHE_HOST="$(uv run python scripts/wait_redis.py)"
+        export REDIS_CACHE_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
         export PYTHONPATH="bases:components"
         uv run --package ecoindex_api --group backend uvicorn ecoindex.backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir bases --reload-dir components
     dir: ../..
@@ -208,7 +208,7 @@ tasks:
     deps: [start-redis]
     cmds:
       - |
-        REDIS_DEV_HOST="$(uv run python scripts/wait_redis.py)"
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
         uv run --package ecoindex_api --group dev rq-dashboard \
           --bind 0.0.0.0 \
           --port {{.RQ_DASHBOARD_PORT}} \

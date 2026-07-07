@@ -720,7 +720,7 @@ provides-extras = ["webp"]
 backend = [{ name = "uvicorn", specifier = ">=0.23.2" }]
 dev = [
     { name = "aiosqlite", specifier = ">=0.19.0" },
-    { name = "rq-dashboard", git = "https://github.com/Parallels/rq-dashboard.git" },
+    { name = "rq-dashboard" },
     { name = "typing-extensions", specifier = ">=4.8.0" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
@@ -2333,13 +2333,17 @@ wheels = [
 [[package]]
 name = "rq-dashboard"
 version = "0.9.0"
-source = { git = "https://github.com/Parallels/rq-dashboard.git#3735f1ebb6a936ff5ad1ef6b3a3bfae58bc03029" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "arrow" },
     { name = "flask" },
     { name = "redis" },
     { name = "redis-sentinel-url" },
     { name = "rq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/46/f5bae00d7b29a90bd88158b25757c3624073e0e766c0d82bc1325a827a7f/rq_dashboard-0.9.0.tar.gz", hash = "sha256:33472117abe47b793d608e60fff5d29ed84e8e5a2c13c793ea3dbfdbde52dfb6", size = 214248, upload-time = "2026-07-02T08:02:20.577Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/83/2f399fa789778dc8f3f4b5e74c23b06d736135e3cb93c1369b88dc431468/rq_dashboard-0.9.0-py2.py3-none-any.whl", hash = "sha256:bcb670a097b1539d1cfe752a1609e3870177b253c4ef49e037d518eef2cd8b86", size = 217225, upload-time = "2026-07-02T08:02:18.879Z" },
 ]
 
 [[package]]

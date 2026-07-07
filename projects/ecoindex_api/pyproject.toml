@@ -46,7 +46,7 @@ worker = [
 ]
 dev = [
     "aiosqlite>=0.19.0",
-    "rq-dashboard @ git+https://github.com/Parallels/rq-dashboard.git",
+    "rq-dashboard",
     "typing-extensions>=4.8.0",
     "watchdog>=6.0.0",
 ]

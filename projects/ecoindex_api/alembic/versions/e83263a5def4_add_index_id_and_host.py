@@ -21,7 +21,7 @@ def upgrade() -> None:
     with op.batch_alter_table("apiecoindex", schema=None) as batch_op:
         batch_op.alter_column(
             "id",
-            existing_type=sqlmodel.sql.sqltypes.GUID(),
+            existing_type=sa.Uuid(),
             nullable=False,
         )
         batch_op.alter_column("version", existing_type=sa.INTEGER(), nullable=False)
@@ -46,6 +46,6 @@ def downgrade() -> None:
         batch_op.alter_column("version", existing_type=sa.INTEGER(), nullable=True)
         batch_op.alter_column(
             "id",
-            existing_type=sqlmodel.sql.sqltypes.GUID(),
+            existing_type=sa.Uuid(),
             nullable=True,
         )
