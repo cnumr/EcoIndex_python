@@ -9,6 +9,7 @@ from redis import Redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 from rq import Worker
 from rq.utils import utcparse
+from rq.worker.base import BaseWorker
 
 WORKER_NAME_PREFIX = "ecoindex-worker-"
 
@@ -33,7 +34,7 @@ def planned_worker_names() -> set[str]:
     return names
 
 
-def is_stale(worker: Worker, max_age_seconds: int) -> bool:
+def is_stale(worker: BaseWorker, max_age_seconds: int) -> bool:
     if worker.last_heartbeat is None:
         return True
 
