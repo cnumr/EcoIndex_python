@@ -46,6 +46,7 @@ services:
       DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
       DEBUG: ${DEBUG:-0}
       REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-redis}
+      RQ_WORKERS: ${RQ_WORKERS:-3}
       TZ: ${TZ:-Europe/Paris}
       ENABLE_SCREENSHOT: ${ENABLE_SCREENSHOT:-0}
     depends_on:
@@ -62,14 +63,6 @@ services:
     command: redis-server --save 20 1 --loglevel warning
     volumes:
       - redis:/data
-
-  flower:
-    image: mher/flower
-    ports:
-      - "${FLOWER_PORT:-5555}:5555"
-    environment:
-      CELERY_BROKER_URL: redis://${REDIS_CACHE_HOST:-redis}/0
-      FLOWER_BASIC_AUTH: ${FLOWER_BASIC_AUTH:-ecoindex:ecoindex}
 
 volumes:
   db:

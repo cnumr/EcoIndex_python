@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     FRONTEND_BASE_URL: str = "https://www.ecoindex.fr"
     GLITCHTIP_DSN: str = ""
     REDIS_CACHE_HOST: str = "localhost"
+    RQ_FAILURE_TTL: int = 86400
+    RQ_JOB_TIMEOUT: int = 600
+    RQ_RESULT_TTL: int = 86400
+    RQ_WORKERS: int = 3
     SCREENSHOTS_GID: int | None = None
     SCREENSHOTS_UID: int | None = None
     TZ: str = "Europe/Paris"

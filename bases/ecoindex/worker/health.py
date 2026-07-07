@@ -1,18 +1,23 @@
 from ecoindex.models.api import HealthWorker, HealthWorkers
-from ecoindex.worker.tasks import app
+from ecoindex.worker_component import redis_connection
+from redis.exceptions import ConnectionError as RedisConnectionError
+from rq.worker import Worker
 
 
 def is_worker_healthy() -> HealthWorkers:
-    workers = []
-    workers_ping = app.control.ping()
-
-    for worker in workers_ping:
-        for name in worker:
+    try:
+        workers = []
+        for worker in Worker.all(connection=redis_connection):
             workers.append(
-                HealthWorker(name=name, healthy=True if "ok" in worker[name] else False)
+                HealthWorker(
+                    name=worker.name,
+                    healthy=worker.state in ("busy", "idle"),
+                )
             )
+    except RedisConnectionError:
+        return HealthWorkers(healthy=False, workers=[])
 
     return HealthWorkers(
-        healthy=False if False in [w.healthy for w in workers] or not workers else True,
+        healthy=bool(workers) and all(w.healthy for w in workers),
         workers=workers,
     )

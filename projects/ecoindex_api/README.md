@@ -15,7 +15,7 @@ This tool provides an easy way to analyze websites with [Ecoindex](https://www.e
 - Limit the number of request per day for a given host
 - Get screenshots of the analyzed page
 
-This API is built on top of [ecoindex-scraper](https://pypi.org/project/ecoindex-scraper/) with [FastAPI](https://fastapi.tiangolo.com/) and [Celery](https://docs.celeryq.dev/)
+This API is built on top of [ecoindex-scraper](https://pypi.org/project/ecoindex-scraper/) with [FastAPI](https://fastapi.tiangolo.com/) and [RQ](https://python-rq.org/)
 
 ## OpenAPI specification
 
@@ -28,13 +28,12 @@ The API specification can be found in the [documentation](projects/ecoindex_api/
 
 ## Installation
 
-With this docker setup you get 6 services running that are enough to make it all work:
+With this docker setup you get 4 services running that are enough to make it all work:
 
 - `db`: A MySQL instance
 - `api`: The API instance running FastAPI application
-- `worker`: The celery task worker that runs ecoindex analysis
-- `redis` (optional): The [redis](https://redis.io/) instance that is used by the Celery worker
-- `flower` (optional): The Celery [monitoring interface](https://flower.readthedocs.io/en/latest/)
+- `worker`: The RQ task worker that runs ecoindex analysis
+- `redis`: The [redis](https://redis.io/) instance that is used by the RQ worker and API cache
 
 ### First start
 
@@ -46,7 +45,6 @@ docker  compose up -d
 Every services should start normaly, then you can go to:
 
 - [http://localhost:8001/docs](http://localhost:8001/docs) to access to the swagger of the API
-- [http://localhost:5555](http://localhost:5555) to access the flower interface (Celery task queue UI. Basic auth is `ecoindex:ecoindex`)
 
 ## Configuration
 
@@ -65,12 +63,15 @@ Here are the environment variables you can configure in your `.env` file:
 | API, Worker         | `DAILY_LIMIT_PER_HOST`     | 0                                  | When this variable is set, it won't be possible for a same host to make more request than defined in the same day to avoid overload. If the variable is set, you will get a header `x-remaining-daily-requests: 6` in your response. It is used for the POST methods. If you reach your authorized request quota for the day, the next requests will give you a 429 response. If the variable is set to 0, no limit is set |
 | API, Worker         | `DATABASE_URL`             | `sqlite+aiosqlite:///./sql_app.db` | If you run your mysql instance on a dedicated server, you can configure it with your credentials. By default, it uses an sqlite database when running in local                                                                                                                                                                                                                                                             |  |
 | API, Worker         | `GLITCHTIP_DSN`            | ``                                 | If you want to use [Glitchtip](https://glitchtip.com/) to monitor your application, you can set this variable with your DSN.                                                                                                                                                                                                                                                                                               |
-| API, Worker, Flower | `REDIS_CACHE_HOST`         | `localhost`                        | The hostname of the redis backend used by Celery but also API to cache results                                                                                                                                                                                                                                                                                                                                             |
+| API, Worker         | `REDIS_CACHE_HOST`         | `localhost`                        | The hostname of the redis backend used by RQ and API cache                                                                                                                                                                                                                                                                                                                                                                 |
+| API, Worker         | `RQ_FAILURE_TTL`           | `86400`                            | Time in seconds before failed job metadata is removed from Redis                                                                                                                                                                                                                                                                                                                                                           |
+| API, Worker         | `RQ_JOB_TIMEOUT`           | `600`                              | Maximum time in seconds a job is allowed to run before being stopped                                                                                                                                                                                                                                                                                                                                                       |
+| API, Worker         | `RQ_RESULT_TTL`            | `86400`                            | Time in seconds before successful job results are removed from Redis                                                                                                                                                                                                                                                                                                                                                       |
+| Worker              | `RQ_WORKERS`               | `3`                                | Number of RQ worker processes started in parallel (one job per process)                                                                                                                                                                                                                                                                                                                                                    |
 | API, Worker         | `TZ`                       | `Europe/Paris`                     | The timezone used by the API and the worker.                                                                                                                                                                                                                                                                                                                                                                               |
 | Worker              | `ENABLE_SCREENSHOT`        | `False`                            | If screenshots are enabled, when analyzing the page the image will be generated in the `./screenshot` directory with the image name corresponding to the analysis ID and will be available on the path `/{version}/ecoindexes/{id}/screenshot`                                                                                                                                                                             |
 | Worker              | `SCREENSHOT_GID`           | None                               | The group used to create the screenshot. If not set, the group of the current user will be used.                                                                                                                                                                                                                                                                                                                           |
 | Worker              | `SCREENSHOT_UID`           | None                               | The user used to create the screenshot. If not set, the current user will be used.                                                                                                                                                                                                                                                                                                                                         |
-| Flower              | `FLOWER_BASIC_AUTH`        | `ecoindex:ecoindex`                | The basic auth used to access the flower interface                                                                                                                                                                                                                                                                                                                                                                         |
 
 ## Local development with [task](https://taskfile.dev)
 

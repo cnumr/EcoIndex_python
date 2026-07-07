@@ -4,8 +4,14 @@ tasks:
   build:
     internal: true
     cmds:
-      - echo "docker build -t {{.NAME}} {{.VERSION}} {{.OPTIONS}} ."
-      - docker build -t vvatelot/ecoindex-{{.NAME}}:{{.VERSION}} -t vvatelot/ecoindex-{{.NAME}}:latest {{.OPTIONS}} .
+      - |
+        if docker buildx version > /dev/null 2>&1; then
+          echo "docker buildx build --load -t vvatelot/ecoindex-{{.NAME}}:{{.VERSION}} -t vvatelot/ecoindex-{{.NAME}}:latest {{.OPTIONS}} ."
+          docker buildx build --load -t vvatelot/ecoindex-{{.NAME}}:{{.VERSION}} -t vvatelot/ecoindex-{{.NAME}}:latest {{.OPTIONS}} .
+        else
+          echo "docker build -t vvatelot/ecoindex-{{.NAME}}:{{.VERSION}} -t vvatelot/ecoindex-{{.NAME}}:latest {{.OPTIONS}} ."
+          docker build -t vvatelot/ecoindex-{{.NAME}}:{{.VERSION}} -t vvatelot/ecoindex-{{.NAME}}:latest {{.OPTIONS}} .
+        fi
     silent: true
   
   push:

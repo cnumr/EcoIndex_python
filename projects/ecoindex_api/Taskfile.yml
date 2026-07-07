@@ -12,6 +12,9 @@ vars:
   PROJECT_NAME: api
   PACKAGE_NAME: ecoindex_api
   OUT_DIR: projects/ecoindex_api/dist
+  RQ_DASHBOARD_PORT: "9181"
+  RQ_WORKERS:
+    sh: printf '%s' "${RQ_WORKERS:-3}"
 
 tasks:
   update-openapi:
@@ -166,29 +169,58 @@ tasks:
   start-redis:
     internal: true
     cmds:
-      - docker run --rm -p 6379:6379 -d redis:alpine
+      - |
+        if ! uv run python scripts/wait_redis.py > /dev/null 2>&1; then
+          docker rm -f ecoindex-dev-redis 2>/dev/null || true
+          docker run -p 6379:6379 -d --name ecoindex-dev-redis redis:alpine 2>/dev/null || docker start ecoindex-dev-redis 2>/dev/null || true
+        fi
+      - uv run python scripts/wait_redis.py > /dev/null
     status:
-      - docker ps | grep redis
+      - uv run python scripts/wait_redis.py > /dev/null
     silent: true
 
   start-worker:
     deps: [start-redis]
     cmds:
-      - uv run watchmedo auto-restart --directory=. --pattern=bases/ecoindex/worker/*.py --recursive -- uv run --package ecoindex_api celery -- -A ecoindex.worker.tasks worker --loglevel=DEBUG --queues=ecoindex,ecoindex_batch -E
+      - |
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        export REDIS_CACHE_HOST="$REDIS_DEV_HOST"
+        export PYTHONPATH="bases:components"
+        export RQ_WORKERS="{{.RQ_WORKERS}}"
+        export RQ_REDIS_URL="redis://$REDIS_DEV_HOST:6379/0"
+        export USE_UV="1"
+        uv run --package ecoindex_api --group dev --group worker watchmedo auto-restart --directory=bases --directory=components --pattern=*.py --recursive -- bash projects/ecoindex_api/scripts/start_rq_workers.sh
     dir: ../..
     silent: true
 
   start-backend:
+    deps: [start-redis]
     cmds:
-      - uv run uvicorn ecoindex.backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir bases --reload-dir components
+      - |
+        export REDIS_CACHE_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        export PYTHONPATH="bases:components"
+        uv run --package ecoindex_api --group backend uvicorn ecoindex.backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir bases --reload-dir components
+    dir: ../..
+    silent: true
+
+  start-rq-dashboard:
+    desc: Start the RQ dashboard for monitoring queues
+    deps: [start-redis]
+    cmds:
+      - |
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        uv run --package ecoindex_api --group dev rq-dashboard \
+          --bind 0.0.0.0 \
+          --port {{.RQ_DASHBOARD_PORT}} \
+          --redis-url "redis://$REDIS_DEV_HOST:6379/0"
     dir: ../..
     silent: true
 
   start-dev:
-    deps: [start-backend, start-worker]
-    desc: Start the backend and the worker
+    deps: [start-backend, start-worker, start-rq-dashboard]
+    desc: Start the backend, the worker and the RQ dashboard
     cmds:
-      - echo "Starting the backend and the worker"
+      - echo "Starting the backend, worker and RQ dashboard (http://localhost:{{.RQ_DASHBOARD_PORT}})"
     silent: true
 
   init-env:
@@ -228,10 +260,3 @@ tasks:
     silent: true
     status:
       - test -f docker-compose.yml
-
-  monitor-queues:
-    desc: Show the queues of the docker-compose API
-    cmds:
-      - uv run --package ecoindex_api celery --app=ecoindex.worker.tasks events
-    dir: ../..
-    silent: true
