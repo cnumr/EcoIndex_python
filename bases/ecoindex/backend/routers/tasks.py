@@ -80,9 +80,9 @@ def convert_url_to_punycode(url: str) -> str:
         return url
 
 
-def _enqueue_settings(*, with_retry: bool = True) -> dict:
+def _enqueue_settings(*, with_retry: bool = True) -> dict[str, object]:
     settings = Settings()
-    enqueue_settings = {
+    enqueue_settings: dict[str, object] = {
         "result_ttl": settings.RQ_RESULT_TTL,
         "failure_ttl": settings.RQ_FAILURE_TTL,
         "job_timeout": settings.RQ_JOB_TIMEOUT,
