@@ -3,7 +3,9 @@ from os import getcwd
 from urllib.parse import urlparse
 from uuid import UUID
 
+from ecoindex.backend import get_api_version
 from ecoindex.backend.utils import check_quota, format_exception_response
+from ecoindex.config.sentry import capture_task_failure, init_sentry
 from ecoindex.config.settings import Settings
 from ecoindex.database.engine import get_session
 from ecoindex.database.exceptions.quota import QuotaExceededException
@@ -22,10 +24,8 @@ from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.scraper.scrap import EcoindexScraper
 from playwright._impl._errors import Error as WebDriverException
 from rq import get_current_job
-from sentry_sdk import init as sentry_init
 
-if Settings().GLITCHTIP_DSN:
-    sentry_init(Settings().GLITCHTIP_DSN)
+init_sentry(with_rq=True, release=get_api_version())
 
 
 def _get_task_id() -> UUID:
@@ -130,6 +130,13 @@ async def async_ecoindex_task(
                 ),
             )
 
+        capture_task_failure(
+            exc,
+            status_code=500,
+            url=url,
+            task_id=str(task_id),
+            task_name="ecoindex_task",
+        )
         return QueueTaskResult(
             status=TaskStatus.FAILURE,
             error=QueueTaskError(
@@ -195,6 +202,11 @@ async def async_ecoindex_batch_import_task(
         return QueueTaskResult(status=TaskStatus.SUCCESS)
 
     except Exception as exc:
+        capture_task_failure(
+            exc,
+            status_code=500,
+            task_name="ecoindex_batch_import_task",
+        )
         return QueueTaskResult(
             status=TaskStatus.FAILURE,
             error=QueueTaskError(
