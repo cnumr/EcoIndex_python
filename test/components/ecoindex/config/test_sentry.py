@@ -14,7 +14,6 @@ from ecoindex.config.sentry import (
 @pytest.fixture
 def sentry_settings(monkeypatch):
     monkeypatch.setenv("SENTRY_DSN", "https://example@sentry.io/1")
-    monkeypatch.delenv("GLITCHTIP_DSN", raising=False)
 
 
 def test_get_sentry_environment_defaults_to_production(sentry_settings, monkeypatch):
@@ -55,7 +54,6 @@ def test_init_sentry_registers_fastapi_and_rq_integrations(mock_init, sentry_set
 @patch("ecoindex.config.sentry.sentry_sdk.init")
 def test_init_sentry_skipped_without_dsn(mock_init, monkeypatch):
     monkeypatch.delenv("SENTRY_DSN", raising=False)
-    monkeypatch.delenv("GLITCHTIP_DSN", raising=False)
 
     init_sentry(with_fastapi=True)
 

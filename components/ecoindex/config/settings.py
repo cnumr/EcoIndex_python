@@ -1,4 +1,3 @@
-from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,10 +18,7 @@ class Settings(BaseSettings):
     ENABLE_SCREENSHOT: bool = False
     EXCLUDED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
     FRONTEND_BASE_URL: str = "https://www.ecoindex.fr"
-    SENTRY_DSN: str = Field(
-        default="",
-        validation_alias=AliasChoices("SENTRY_DSN", "GLITCHTIP_DSN"),
-    )
+    SENTRY_DSN: str = ""
     SENTRY_ENVIRONMENT: str = ""
     SENTRY_TRACES_SAMPLE_RATE: float = 0.0
     REDIS_CACHE_HOST: str = "localhost"

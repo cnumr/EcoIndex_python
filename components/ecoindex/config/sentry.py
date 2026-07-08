@@ -1,6 +1,7 @@
 from typing import Any
 
 import sentry_sdk
+from sentry_sdk.integrations import Integration
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
@@ -31,7 +32,7 @@ def init_sentry(
     if not settings.SENTRY_DSN:
         return
 
-    integrations = []
+    integrations: list[Integration] = []
     if with_fastapi:
         integrations.extend(
             [
