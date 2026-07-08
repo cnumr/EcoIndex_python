@@ -11,4 +11,4 @@ if [ -S /var/run/docker.sock ]; then
 fi
 
 uv sync --all-groups
-uv run playwright install chromium --with-deps
+uv run camoufox fetch

@@ -38,7 +38,7 @@ This repository contains the following projects:
   - The number of DOM elements in the page
   - The size of the page
   - The number of external requests of the page
-- [Ecoindex Scraper](projects/ecoindex_scraper/README.md): This module provides a simple interface to get the [Ecoindex](http://www.ecoindex.fr) based on a URL. It uses [Playwright](https://playwright.dev/) to get the DOM elements, size and requests of the page.
+- [Ecoindex Scraper](projects/ecoindex_scraper/README.md): This module provides a simple interface to get the [Ecoindex](http://www.ecoindex.fr) based on a URL. It uses [Camoufox](https://camoufox.com/) to get the DOM elements, size and requests of the page.
 - [Ecoindex CLI](projects/ecoindex_cli/README.md): This module provides a CLI tool to get the [Ecoindex](http://www.ecoindex.fr) based on a URL. It uses the [Ecoindex Scraper](projects/ecoindex_scraper/README.md) module.
 - [Ecoindex API](projects/ecoindex_api/README.md): This module provides a REST API to get the [Ecoindex](http://www.ecoindex.fr) based on a URL. It uses the [Ecoindex Scraper](projects/ecoindex_scraper/README.md) module.
 

@@ -352,7 +352,7 @@ At first, you need to install dependencies from the repository root:
 
 ```bash
 uv sync --all-groups
-uv run playwright install chromium --with-deps
+uv run camoufox fetch
 ```
 
 ### Usage

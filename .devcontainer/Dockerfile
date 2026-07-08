@@ -3,6 +3,16 @@ FROM mcr.microsoft.com/devcontainers/python:1-3.12
 # Install uv from the official image (recommended by Astral)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+# Install runtime browser dependencies for Camoufox
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    libasound2 \
+    libdbus-glib-1-2 \
+    libgbm1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Task (https://taskfile.dev)
 RUN curl -fsSL https://taskfile.dev/install.sh | sh -s -- -d -b /usr/local/bin
 

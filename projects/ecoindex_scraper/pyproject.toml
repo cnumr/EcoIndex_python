@@ -7,8 +7,7 @@ requires-python = ">=3.10,<3.13"
 license = { text = "Creative Commons BY-NC-ND" }
 authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
 dependencies = [
-    "playwright>=1.39.0",
-    "playwright-stealth>=1.0.6",
+    "camoufox>=0.4.11",
     "pydantic>=2.4.2",
     "pyyaml>=6.0.1",
     "setuptools>=69.5.1,<79.0.0",

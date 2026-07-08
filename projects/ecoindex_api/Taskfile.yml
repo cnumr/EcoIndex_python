@@ -241,8 +241,8 @@ tasks:
       - echo "Initialize the project for development"
       - echo "Install uv dependencies"
       - task: uv:install
-      - echo "Install playwright"
-      - task: uv:install-playwright
+      - echo "Install Camoufox"
+      - task: uv:install-camoufox
       - echo "Create the environment file"
       - task: init-env
       - echo "Create the database"

@@ -9,10 +9,20 @@ COPY projects/ecoindex_scraper/ projects/ecoindex_scraper/
 COPY bases/ bases/
 COPY components/ components/
 
+# Install runtime browser dependencies for Camoufox
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    libasound2 \
+    libdbus-glib-1-2 \
+    libgbm1 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN uv sync --package ecoindex_scraper --frozen --no-dev --no-editable
 
 ENV PATH="/code/.venv/bin:$PATH"
 
-RUN playwright install chromium --with-deps
+RUN uv run camoufox fetch
 
 RUN rm -rf /tmp/dist /var/lib/{apt,dpkg,cache,log}/

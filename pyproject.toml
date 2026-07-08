@@ -24,8 +24,7 @@ update-values = "ecoindex.scripts:update_values"
 
 [dependency-groups]
 scraper = [
-    "playwright>=1.39.0",
-    "playwright-stealth>=1.0.6",
+    "camoufox>=0.4.11",
 ]
 scraper-webp = [
     "pillow>=12.2.0",
@@ -87,7 +86,12 @@ namespace_packages = true
 explicit_package_bases = true
 ignore_missing_imports = true
 disallow_untyped_defs = false
-exclude = ["test", "dist", "__pycache__", "projects/ecoindex_api/alembic/versions"]
+exclude = [
+    "test",
+    "dist",
+    "__pycache__",
+    "projects/ecoindex_api/alembic/versions",
+]
 
 [tool.coverage.run]
 omit = ["test/*"]
