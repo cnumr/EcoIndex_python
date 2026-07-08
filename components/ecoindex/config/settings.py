@@ -18,7 +18,9 @@ class Settings(BaseSettings):
     ENABLE_SCREENSHOT: bool = False
     EXCLUDED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
     FRONTEND_BASE_URL: str = "https://www.ecoindex.fr"
-    GLITCHTIP_DSN: str = ""
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = ""
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.0
     REDIS_CACHE_HOST: str = "localhost"
     RQ_FAILURE_TTL: int = 86400
     RQ_JOB_TIMEOUT: int = 600

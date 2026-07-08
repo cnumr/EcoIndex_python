@@ -2,6 +2,7 @@ from ecoindex.backend.utils import format_exception_response
 from ecoindex.database.exceptions.quota import QuotaExceededException
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from ecoindex.monitoring import capture_internal_error
 
 HTTP_520_ECOINDEX_TYPE_ERROR = 520
 HTTP_521_ECOINDEX_CONNECTION_ERROR = 521
@@ -37,7 +38,15 @@ def handle_exceptions(app: FastAPI):
         )
 
     @app.exception_handler(Exception)
-    async def handle_exception(_: Request, exc: Exception):
+    async def handle_exception(request: Request, exc: Exception):
+        capture_internal_error(
+            exc,
+            context={
+                "method": request.method,
+                "path": request.url.path,
+                "query": str(request.query_params),
+            },
+        )
         exception_response = await format_exception_response(exception=exc)
         return JSONResponse(
             content={"detail": exception_response.model_dump()},

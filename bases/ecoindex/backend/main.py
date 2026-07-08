@@ -1,17 +1,15 @@
 from ecoindex.backend import get_api_version
 from ecoindex.backend.routers import router
 from ecoindex.backend.services.cache import cache
-from ecoindex.config import Settings
 from ecoindex.database.engine import init_db
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
-from sentry_sdk import init as sentry_init
+from ecoindex.monitoring import init_sentry
 
 
 def init_app():
     cache.init()
-    if Settings().GLITCHTIP_DSN:
-        sentry_init(Settings().GLITCHTIP_DSN)
+    init_sentry(with_fastapi=True, release=get_api_version())
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):

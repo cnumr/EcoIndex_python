@@ -651,7 +651,7 @@ wheels = [
 
 [[package]]
 name = "ecoindex-api"
-version = "3.12.0"
+version = "3.13.0"
 source = { editable = "projects/ecoindex_api" }
 dependencies = [
     { name = "aiofile", version = "3.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
