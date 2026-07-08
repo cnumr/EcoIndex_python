@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from ecoindex.config.sentry import (
+from ecoindex.monitoring.sentry import (
     INTERNAL_SERVER_ERROR_STATUS,
     capture_internal_error,
     capture_task_failure,
@@ -40,7 +40,7 @@ def test_get_sentry_environment_uses_explicit_value(sentry_settings, monkeypatch
     assert get_sentry_environment() == "staging"
 
 
-@patch("ecoindex.config.sentry.sentry_sdk.init")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.init")
 def test_init_sentry_registers_fastapi_and_rq_integrations(mock_init, sentry_settings):
     init_sentry(with_fastapi=True, with_rq=True, release="ecoindex-api@1.0.0")
 
@@ -51,7 +51,7 @@ def test_init_sentry_registers_fastapi_and_rq_integrations(mock_init, sentry_set
     assert len(kwargs["integrations"]) == 3
 
 
-@patch("ecoindex.config.sentry.sentry_sdk.init")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.init")
 def test_init_sentry_skipped_without_dsn(mock_init, monkeypatch):
     monkeypatch.delenv("SENTRY_DSN", raising=False)
 
@@ -60,8 +60,8 @@ def test_init_sentry_skipped_without_dsn(mock_init, monkeypatch):
     mock_init.assert_not_called()
 
 
-@patch("ecoindex.config.sentry.sentry_sdk.capture_exception")
-@patch("ecoindex.config.sentry.sentry_sdk.push_scope")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.capture_exception")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.push_scope")
 def test_capture_internal_error_reports_500_errors(
     mock_push_scope, mock_capture_exception, sentry_settings
 ):
@@ -79,7 +79,7 @@ def test_capture_internal_error_reports_500_errors(
     mock_capture_exception.assert_called_once_with(error)
 
 
-@patch("ecoindex.config.sentry.sentry_sdk.capture_exception")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.capture_exception")
 def test_capture_internal_error_ignores_non_500_errors(
     mock_capture_exception, sentry_settings
 ):
@@ -88,8 +88,8 @@ def test_capture_internal_error_ignores_non_500_errors(
     mock_capture_exception.assert_not_called()
 
 
-@patch("ecoindex.config.sentry.sentry_sdk.capture_exception")
-@patch("ecoindex.config.sentry.sentry_sdk.push_scope")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.capture_exception")
+@patch("ecoindex.monitoring.sentry.sentry_sdk.push_scope")
 def test_capture_task_failure_adds_task_context(
     mock_push_scope, mock_capture_exception, sentry_settings
 ):

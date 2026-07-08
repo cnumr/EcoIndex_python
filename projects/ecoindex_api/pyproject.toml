@@ -69,6 +69,7 @@ packages = ["ecoindex"]
 "../../components/ecoindex/database" = "ecoindex/database"
 "../../components/ecoindex/exceptions" = "ecoindex/exceptions"
 "../../components/ecoindex/models" = "ecoindex/models"
+"../../components/ecoindex/monitoring" = "ecoindex/monitoring"
 "../../components/ecoindex/scraper" = "ecoindex/scraper"
 "../../components/ecoindex/utils" = "ecoindex/utils"
 "../../components/ecoindex/worker_component" = "ecoindex/worker_component"

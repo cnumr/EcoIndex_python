@@ -1,10 +1,10 @@
 from ecoindex.backend import get_api_version
 from ecoindex.backend.routers import router
 from ecoindex.backend.services.cache import cache
-from ecoindex.config.sentry import init_sentry
 from ecoindex.database.engine import init_db
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
+from ecoindex.monitoring import init_sentry
 
 
 def init_app():

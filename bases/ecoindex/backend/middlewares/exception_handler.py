@@ -1,8 +1,8 @@
 from ecoindex.backend.utils import format_exception_response
-from ecoindex.config.sentry import capture_internal_error
 from ecoindex.database.exceptions.quota import QuotaExceededException
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from ecoindex.monitoring import capture_internal_error
 
 HTTP_520_ECOINDEX_TYPE_ERROR = 520
 HTTP_521_ECOINDEX_CONNECTION_ERROR = 521

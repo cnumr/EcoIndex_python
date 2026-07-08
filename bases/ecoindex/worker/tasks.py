@@ -5,7 +5,6 @@ from uuid import UUID
 
 from ecoindex.backend import get_api_version
 from ecoindex.backend.utils import check_quota, format_exception_response
-from ecoindex.config.sentry import capture_task_failure, init_sentry
 from ecoindex.config.settings import Settings
 from ecoindex.database.engine import get_session
 from ecoindex.database.exceptions.quota import QuotaExceededException
@@ -21,6 +20,7 @@ from ecoindex.exceptions.worker import (
 from ecoindex.models import ScreenShot, WindowSize
 from ecoindex.models.enums import TaskStatus
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
+from ecoindex.monitoring import capture_task_failure, init_sentry
 from ecoindex.scraper.scrap import EcoindexScraper
 from playwright._impl._errors import Error as WebDriverException
 from rq import get_current_job
