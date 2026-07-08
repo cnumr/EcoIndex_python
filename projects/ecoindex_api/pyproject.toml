@@ -10,7 +10,7 @@ dependencies = [
     "aiofile>=3.8.8",
     "alembic>=1.12.1",
     "rq>=2.1.0",
-    "cryptography>=44.0.2",
+    "cryptography>=48.0.1",
     "fastapi>=0.109.1",
     "camoufox>=0.4.11",
     "pydantic[email]>=2.1.1,<=2.4.2",
