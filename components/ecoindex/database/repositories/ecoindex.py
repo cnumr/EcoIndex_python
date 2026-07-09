@@ -1,4 +1,5 @@
 from datetime import date
+from typing import cast
 from uuid import UUID
 
 from ecoindex.database.helper import date_filter
@@ -30,7 +31,7 @@ async def get_count_analysis_db(
 
     result = await session.exec(statement)
 
-    return result.scalar_one()
+    return cast(int, result.one())
 
 
 async def get_rank_analysis_db(

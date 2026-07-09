@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Any, cast
 
 from ecoindex.database.helper import date_filter
 from ecoindex.database.models import ApiEcoindex
@@ -25,7 +26,7 @@ async def get_host_list_db(
     )
 
     if host:
-        statement = statement.filter(ApiEcoindex.host.like(f"%{host}%"))  # type: ignore
+        statement = statement.filter(cast(Any, ApiEcoindex.host).like(f"%{host}%"))
 
     statement = date_filter(statement=statement, date_from=date_from, date_to=date_to)
 
@@ -53,7 +54,7 @@ async def get_count_hosts_db(
         statement = statement.where(ApiEcoindex.host == name)
 
     if q:
-        statement = statement.where(ApiEcoindex.host.like(f"%{q}%"))
+        statement = statement.where(cast(Any, ApiEcoindex.host).like(f"%{q}%"))
 
     statement = date_filter(statement=statement, date_from=date_from, date_to=date_to)
 
@@ -67,11 +68,13 @@ async def get_count_hosts_db(
         if name:
             count_statement = count_statement.where(ApiEcoindex.host == name)
         if q:
-            count_statement = count_statement.where(ApiEcoindex.host.like(f"%{q}%"))
+            count_statement = count_statement.where(
+                cast(Any, ApiEcoindex.host).like(f"%{q}%")
+            )
         count_statement = date_filter(
             statement=count_statement, date_from=date_from, date_to=date_to
         )
 
     result = await session.exec(count_statement)
 
-    return result.scalar_one()
+    return cast(int, result.one())

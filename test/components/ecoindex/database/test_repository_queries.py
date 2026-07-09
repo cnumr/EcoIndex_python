@@ -8,7 +8,7 @@ class FakeResult:
     def __init__(self, value: int):
         self.value = value
 
-    def scalar_one(self) -> int:
+    def one(self) -> int:
         return self.value
 
 
