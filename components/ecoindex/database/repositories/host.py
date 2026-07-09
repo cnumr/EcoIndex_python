@@ -3,7 +3,7 @@ from datetime import date
 from ecoindex.database.helper import date_filter
 from ecoindex.database.models import ApiEcoindex
 from ecoindex.models.enums import Version
-from sqlalchemy import text
+from sqlalchemy import func
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -45,26 +45,33 @@ async def get_count_hosts_db(
     date_to: date | None = None,
     group_by_host: bool = True,
 ) -> int:
-    sub_statement = (
-        f"SELECT host FROM apiecoindex WHERE version = {version.get_version_number()}"
+    statement = select(ApiEcoindex.host).where(
+        ApiEcoindex.version == version.get_version_number()
     )
+
     if name:
-        sub_statement += f" AND host = '{name}'"
+        statement = statement.where(ApiEcoindex.host == name)
 
     if q:
-        sub_statement += f" AND host LIKE '%{q}%'"
+        statement = statement.where(ApiEcoindex.host.like(f"%{q}%"))
 
-    if date_from:
-        sub_statement += f" AND date >= '{date_from}'"
-
-    if date_to:
-        sub_statement += f" AND date <= '{date_to}'"
+    statement = date_filter(statement=statement, date_from=date_from, date_to=date_to)
 
     if group_by_host:
-        sub_statement += " GROUP BY host"
+        statement = statement.group_by(ApiEcoindex.host)
+        count_statement = select(func.count()).select_from(statement.subquery())
+    else:
+        count_statement = select(func.count()).select_from(ApiEcoindex).where(
+            ApiEcoindex.version == version.get_version_number()
+        )
+        if name:
+            count_statement = count_statement.where(ApiEcoindex.host == name)
+        if q:
+            count_statement = count_statement.where(ApiEcoindex.host.like(f"%{q}%"))
+        count_statement = date_filter(
+            statement=count_statement, date_from=date_from, date_to=date_to
+        )
 
-    statement = f"SELECT count(*) FROM ({sub_statement}) t"
-
-    result = await session.exec(statement=text(statement))  # type: ignore
+    result = await session.exec(count_statement)
 
     return result.scalar_one()

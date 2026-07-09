@@ -19,21 +19,16 @@ async def get_count_analysis_db(
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> int:
-    statement = (
-        "SELECT count(*) FROM apiecoindex "
-        f"WHERE version = {version.get_version_number()}"
+    statement = select(func.count()).select_from(ApiEcoindex).where(
+        ApiEcoindex.version == version.get_version_number()
     )
 
     if host:
-        statement += f" AND host = '{host}'"
+        statement = statement.where(ApiEcoindex.host == host)
 
-    if date_from:
-        statement += f" AND date >= '{date_from}'"
+    statement = date_filter(statement=statement, date_from=date_from, date_to=date_to)
 
-    if date_to:
-        statement += f" AND date <= '{date_to}'"
-
-    result = await session.exec(statement=text(statement))  # type: ignore
+    result = await session.exec(statement)
 
     return result.scalar_one()
 
