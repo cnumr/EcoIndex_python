@@ -1,6 +1,6 @@
 [project]
 name = "ecoindex_api"
-version = "3.14.0"
+version = "3.14.1"
 description = "REST API to expose Ecoindex"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
