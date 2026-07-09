@@ -44,8 +44,8 @@ async def get_latest_result_by_url(
     )
 
     if not ecoindexes:
-        await ecoindex_cache.set_cached_ecoindex_search_results(
-            ecoindex_search_results=EcoindexSearchResults(count=0).model_dump_json()
+        await ecoindex_cache.set(
+            data=EcoindexSearchResults(count=0).model_dump_json()
         )
 
         return EcoindexSearchResults(count=0)
