@@ -1,5 +1,5 @@
 from tempfile import NamedTemporaryFile
-from typing import Set
+from typing import Set, cast
 from urllib.parse import urlparse, urlunparse
 
 from ecoindex.cli.crawl import EcoindexSpider
@@ -7,9 +7,15 @@ from ecoindex.cli.helper import replace_localhost_with_hostdocker
 from ecoindex.cli.sitemap import EcoindexSitemapSpider
 from ecoindex.models import WindowSize
 
-from pydantic import AnyHttpUrl, validate_call
+from pydantic import AnyHttpUrl, TypeAdapter, validate_call
 from pydantic.types import FilePath
 from scrapy.crawler import CrawlerProcess
+
+_any_http_url_adapter = TypeAdapter(AnyHttpUrl)
+
+
+def _parse_any_http_url(url: str) -> AnyHttpUrl:
+    return cast(AnyHttpUrl, _any_http_url_adapter.validate_python(url))
 
 
 @validate_call
@@ -74,7 +80,7 @@ def get_urls_from_sitemap(main_url: str) -> Set[str]:
         urls = list()
         str_urls = temp_file.readlines()
         for url in str_urls:
-            urls.append(AnyHttpUrl(url))
+            urls.append(_parse_any_http_url(url))
 
     return validate_list_of_urls(urls)
 
@@ -85,7 +91,18 @@ def get_url_from_args(urls_arg: list[AnyHttpUrl]) -> set[AnyHttpUrl]:
     for url in urls_arg:
         parsed_url = urlparse(str(url))
         host_infos = replace_localhost_with_hostdocker(parsed_url.netloc)
-        url = AnyHttpUrl(urlunparse((parsed_url.scheme, host_infos.netloc, parsed_url.path, parsed_url.params, parsed_url.query, parsed_url.fragment)))
+        url = _parse_any_http_url(
+            urlunparse(
+                (
+                    parsed_url.scheme,
+                    host_infos.netloc,
+                    parsed_url.path,
+                    parsed_url.params,
+                    parsed_url.query,
+                    parsed_url.fragment,
+                )
+            )
+        )
         urls_from_args.add(url)
 
     return urls_from_args

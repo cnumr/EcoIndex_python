@@ -89,13 +89,8 @@ python-version = "3.12"
 exclude = ["test", "dist", "projects/ecoindex_api/alembic/versions"]
 
 [tool.ty.rules]
-call-non-callable = "warn"
-no-matching-overload = "warn"
 unused-type-ignore-comment = "ignore"
 deprecated = "ignore"
-
-[tool.ty.terminal]
-error-on-warning = false
 
 [tool.coverage.run]
 omit = ["test/*"]
