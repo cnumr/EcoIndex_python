@@ -46,7 +46,7 @@ def test_persist_screenshot_uploads_to_s3(monkeypatch, tmp_path):
     monkeypatch.setenv("SCREENSHOT_STORAGE_TYPE", "s3")
     monkeypatch.setenv("SCREENSHOT_S3_BUCKET", "ecoindex-screenshots")
     monkeypatch.setenv("SCREENSHOT_S3_PREFIX", "screenshots")
-    monkeypatch.setenv("SCREENSHOT_S3_ENDPOINT_URL", "http://garage:3900")
+    monkeypatch.setenv("SCREENSHOT_S3_ENDPOINT_URL", "http://rustfs:9000")
     monkeypatch.setenv("SCREENSHOT_S3_ACCESS_KEY_ID", "access-key")
     monkeypatch.setenv("SCREENSHOT_S3_SECRET_ACCESS_KEY", "secret-key")
     monkeypatch.setattr(

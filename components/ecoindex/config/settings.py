@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     SCREENSHOT_S3_ENDPOINT_URL: str = ""
     SCREENSHOT_S3_FORCE_PATH_STYLE: bool = True
     SCREENSHOT_S3_PREFIX: str = "screenshots"
-    SCREENSHOT_S3_REGION: str = "garage"
+    SCREENSHOT_S3_REGION: str = "us-east-1"
     SCREENSHOT_S3_SECRET_ACCESS_KEY: str = ""
     SCREENSHOTS_GID: int | None = None
     SCREENSHOTS_UID: int | None = None

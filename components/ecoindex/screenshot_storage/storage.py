@@ -86,9 +86,19 @@ def persist_screenshot(screenshot: ScreenShot, version: str) -> None:
 
     settings = Settings()
     screenshot_path = Path(screenshot.get_webp())
-    _get_s3_client().upload_file(
+    client = _get_s3_client()
+    bucket = settings.SCREENSHOT_S3_BUCKET
+    try:
+        client.head_bucket(Bucket=bucket)
+    except ClientError as exc:
+        error_code = exc.response.get("Error", {}).get("Code")
+        if error_code not in {"404", "NoSuchBucket", "NotFound"}:
+            raise
+        client.create_bucket(Bucket=bucket)
+
+    client.upload_file(
         str(screenshot_path),
-        settings.SCREENSHOT_S3_BUCKET,
+        bucket,
         get_screenshot_object_key(version=version, screenshot_id=screenshot.id),
         ExtraArgs={"ContentType": "image/webp"},
     )
