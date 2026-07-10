@@ -33,7 +33,7 @@ With this docker setup you get 4 services running that are enough to make it all
 - `db`: A MySQL instance
 - `api`: The API instance running FastAPI application
 - `worker`: The RQ task worker that runs ecoindex analysis
-- `redis`: The [redis](https://redis.io/) instance that is used by the RQ worker and API cache
+- `valkey`: The [Valkey](https://valkey.io/) instance (Redis-compatible) used by the RQ worker and API cache
 
 ### First start
 
@@ -65,10 +65,10 @@ Here are the environment variables you can configure in your `.env` file:
 | API, Worker         | `SENTRY_DSN`               | ``                                 | If you want to use [Sentry](https://sentry.io/) to monitor your application, set this variable with your project DSN.                                                                                                                                                                                                                                                                                                      |
 | API, Worker         | `SENTRY_ENVIRONMENT`       | ``                                 | Optional Sentry environment name (e.g. `production`, `staging`). If not set, defaults to `development` when `DEBUG=True`, otherwise `production`.                                                                                                                                                                                                                                                                    |
 | API, Worker         | `SENTRY_TRACES_SAMPLE_RATE`| `0.0`                              | Fraction of transactions to send to Sentry for performance monitoring (0.0 to 1.0). Set to `0.1` in production to sample 10% of requests.                                                                                                                                                                                                                                                                                 |
-| API, Worker         | `REDIS_CACHE_HOST`         | `localhost`                        | The hostname of the redis backend used by RQ and API cache                                                                                                                                                                                                                                                                                                                                                                 |
-| API, Worker         | `RQ_FAILURE_TTL`           | `86400`                            | Time in seconds before failed job metadata is removed from Redis                                                                                                                                                                                                                                                                                                                                                           |
+| API, Worker         | `REDIS_CACHE_HOST`         | `localhost`                        | The hostname of the Valkey backend used by RQ and API cache (Redis-compatible protocol)                                                                                                                                                                                                                                                                                                                                      |
+| API, Worker         | `RQ_FAILURE_TTL`           | `86400`                            | Time in seconds before failed job metadata is removed from Valkey                                                                                                                                                                                                                                                                                                                                                          |
 | API, Worker         | `RQ_JOB_TIMEOUT`           | `600`                              | Maximum time in seconds a job is allowed to run before being stopped                                                                                                                                                                                                                                                                                                                                                       |
-| API, Worker         | `RQ_RESULT_TTL`            | `86400`                            | Time in seconds before successful job results are removed from Redis                                                                                                                                                                                                                                                                                                                                                       |
+| API, Worker         | `RQ_RESULT_TTL`            | `86400`                            | Time in seconds before successful job results are removed from Valkey                                                                                                                                                                                                                                                                                                                                                      |
 | Worker              | `RQ_WORKERS`               | `3`                                | Number of RQ worker processes started in parallel (one job per process)                                                                                                                                                                                                                                                                                                                                                    |
 | API, Worker         | `TZ`                       | `Europe/Paris`                     | The timezone used by the API and the worker.                                                                                                                                                                                                                                                                                                                                                                               |
 | Worker              | `ENABLE_SCREENSHOT`        | `False`                            | If screenshots are enabled, when analyzing the page the image will be generated in the `./screenshot` directory with the image name corresponding to the analysis ID and will be available on the path `/{version}/ecoindexes/{id}/screenshot`                                                                                                                                                                             |
@@ -83,11 +83,24 @@ Task is a task runner and build tool. You can install it with the following comm
 curl -sL https://taskfile.dev/install.sh | sh
 ```
 
-Then you can run the server in debug mode with the following command:
+### Setup
+
+From the repository root:
 
 ```bash
-task start-dev
+task uv:install          # Install Python 3.12 and all dependencies
+task api:init-dev-project # Initialize API dev environment (Playwright, .env, migrations)
 ```
+
+### Run the API locally
+
+Valkey is started automatically via Docker. Then run:
+
+```bash
+task api:start-dev
+```
+
+This starts the backend (http://localhost:8000), the RQ worker and the RQ dashboard (http://localhost:9181).
 
 ## Testing
 

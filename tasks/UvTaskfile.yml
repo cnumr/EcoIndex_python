@@ -8,8 +8,9 @@ tasks:
     silent: true
 
   install:
-    desc: Install workspace dependencies
+    desc: Install Python and workspace dependencies
     cmds:
+      - uv python install
       - uv sync --all-groups
     silent: true
 

@@ -2,8 +2,7 @@ from typing import AsyncGenerator
 
 from ecoindex.config import Settings
 from ecoindex.models.api import *  # noqa: F401, F403
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -23,10 +22,10 @@ async def init_db():
 
 
 async def get_session() -> AsyncGenerator:
-    async_session = sessionmaker(
-        bind=engine,  # type: ignore
+    async_session = async_sessionmaker(
+        engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    async with async_session() as session:  # type: ignore
+    async with async_session() as session:
         yield session

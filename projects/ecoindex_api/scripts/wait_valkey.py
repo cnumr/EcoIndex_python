@@ -1,24 +1,19 @@
-"""Dev helper: resolve a reachable Redis host for local development."""
+"""Dev helper: resolve a reachable Valkey host for local development."""
 
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import time
 
 from redis import Redis
 from redis.exceptions import ConnectionError
 
-CONTAINER = "ecoindex-dev-redis"
-DEFAULT_GATEWAY_HOST = "172.17.0.1"
+CONTAINER = "ecoindex-dev-valkey"
 
 
 def candidate_hosts() -> list[str]:
-    if os.path.exists("/.dockerenv"):
-        hosts = [DEFAULT_GATEWAY_HOST, "localhost", "127.0.0.1"]
-    else:
-        hosts = ["localhost", "127.0.0.1", DEFAULT_GATEWAY_HOST]
+    hosts = ["localhost", "127.0.0.1"]
     try:
         data = json.loads(
             subprocess.check_output(
@@ -52,7 +47,7 @@ def resolve_host() -> str:
     for host in candidate_hosts():
         if ping(host):
             return host
-    raise RuntimeError("Redis is not reachable")
+    raise RuntimeError("Valkey is not reachable")
 
 
 def main() -> None:
@@ -62,7 +57,7 @@ def main() -> None:
             return
         except RuntimeError:
             time.sleep(0.2)
-    raise SystemExit("Redis is not ready")
+    raise SystemExit("Valkey is not ready")
 
 
 if __name__ == "__main__":

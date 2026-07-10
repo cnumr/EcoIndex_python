@@ -16,10 +16,10 @@ tasks:
     cmds:
       - uv run pytest --cov-report "xml:coverage.xml" --cov=. --picked --mode=branch test
 
-  mypy:
-    desc: Run mypy
+  ty:
+    desc: Run ty type checker
     cmds:
-      - uv run mypy .
+      - uv run ty check
   
   ruff:
     desc: Run ruff
@@ -28,12 +28,12 @@ tasks:
   
   quality-branch:
     desc: Run quality checks
-    deps: [tests-coverage-branch, mypy, ruff]
+    deps: [tests-coverage-branch, ty, ruff]
     cmds:
       - echo "Quality checks passed"
 
   default:
     desc: Run quality checks
-    deps: [tests-coverage, mypy, ruff]
+    deps: [tests-coverage, ty, ruff]
     cmds:
       - echo "Quality checks passed"
