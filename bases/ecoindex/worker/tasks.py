@@ -21,7 +21,7 @@ from ecoindex.models.enums import TaskStatus, Version
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.monitoring import capture_task_failure, init_sentry
 from ecoindex.scraper.scrap import EcoindexScraper
-from ecoindex.utils.screenshot_storage import (
+from ecoindex.screenshot_storage import (
     get_screenshot_local_folder,
     persist_screenshot,
 )

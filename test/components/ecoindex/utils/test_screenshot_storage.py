@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from ecoindex.models import ScreenShot
-from ecoindex.utils.screenshot_storage import (
+from ecoindex.screenshot_storage import (
     get_screenshot_local_folder,
     get_screenshot_object_key,
     persist_screenshot,
@@ -50,7 +50,7 @@ def test_persist_screenshot_uploads_to_s3(monkeypatch, tmp_path):
     monkeypatch.setenv("SCREENSHOT_S3_ACCESS_KEY_ID", "access-key")
     monkeypatch.setenv("SCREENSHOT_S3_SECRET_ACCESS_KEY", "secret-key")
     monkeypatch.setattr(
-        "ecoindex.utils.screenshot_storage._get_s3_client",
+        "ecoindex.screenshot_storage.storage._get_s3_client",
         lambda: FakeS3Client(),
     )
 

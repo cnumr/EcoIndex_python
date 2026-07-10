@@ -21,7 +21,7 @@ from ecoindex.database.repositories.ecoindex import (
 )
 from ecoindex.models import example_ecoindex_not_found, example_file_not_found
 from ecoindex.models.enums import Version
-from ecoindex.utils.screenshot_storage import (
+from ecoindex.screenshot_storage import (
     get_screenshot_local_path,
     is_s3_screenshot_storage,
     read_screenshot,

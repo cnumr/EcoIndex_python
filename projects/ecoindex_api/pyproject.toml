@@ -72,5 +72,6 @@ packages = ["ecoindex"]
 "../../components/ecoindex/models" = "ecoindex/models"
 "../../components/ecoindex/monitoring" = "ecoindex/monitoring"
 "../../components/ecoindex/scraper" = "ecoindex/scraper"
+"../../components/ecoindex/screenshot_storage" = "ecoindex/screenshot_storage"
 "../../components/ecoindex/utils" = "ecoindex/utils"
 "../../components/ecoindex/worker_component" = "ecoindex/worker_component"
