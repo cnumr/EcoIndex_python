@@ -17,7 +17,7 @@ from ecoindex.exceptions.worker import (
     EcoindexTimeout,
 )
 from ecoindex.models import ScreenShot, WindowSize
-from ecoindex.models.enums import TaskStatus
+from ecoindex.models.enums import TaskStatus, Version
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.monitoring import capture_task_failure, init_sentry
 from ecoindex.scraper.scrap import EcoindexScraper
