@@ -28,10 +28,21 @@ services:
       DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
       DEBUG: ${DEBUG:-0}
       REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
+      SCREENSHOT_FILESYSTEM_PATH: ${SCREENSHOT_FILESYSTEM_PATH:-/code/screenshots}
+      SCREENSHOT_STORAGE_TYPE: ${SCREENSHOT_STORAGE_TYPE:-s3}
+      SCREENSHOT_S3_ACCESS_KEY_ID: ${SCREENSHOT_S3_ACCESS_KEY_ID:-ecoindex-access-key}
+      SCREENSHOT_S3_BUCKET: ${SCREENSHOT_S3_BUCKET:-ecoindex-screenshots}
+      SCREENSHOT_S3_ENDPOINT_URL: ${SCREENSHOT_S3_ENDPOINT_URL:-http://rustfs:9000}
+      SCREENSHOT_S3_FORCE_PATH_STYLE: ${SCREENSHOT_S3_FORCE_PATH_STYLE:-1}
+      SCREENSHOT_S3_PREFIX: ${SCREENSHOT_S3_PREFIX:-screenshots}
+      SCREENSHOT_S3_REGION: ${SCREENSHOT_S3_REGION:-us-east-1}
+      SCREENSHOT_S3_SECRET_ACCESS_KEY: ${SCREENSHOT_S3_SECRET_ACCESS_KEY:-ecoindex-secret-key-change-me}
       TZ: ${TZ:-Europe/Paris}
     depends_on:
       db:
         condition: service_healthy
+      rustfs-init:
+        condition: service_completed_successfully
       valkey:
         condition: service_started
     volumes:
@@ -47,11 +58,22 @@ services:
       DEBUG: ${DEBUG:-0}
       REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
       RQ_WORKERS: ${RQ_WORKERS:-3}
+      SCREENSHOT_FILESYSTEM_PATH: ${SCREENSHOT_FILESYSTEM_PATH:-/code/screenshots}
+      SCREENSHOT_STORAGE_TYPE: ${SCREENSHOT_STORAGE_TYPE:-s3}
+      SCREENSHOT_S3_ACCESS_KEY_ID: ${SCREENSHOT_S3_ACCESS_KEY_ID:-ecoindex-access-key}
+      SCREENSHOT_S3_BUCKET: ${SCREENSHOT_S3_BUCKET:-ecoindex-screenshots}
+      SCREENSHOT_S3_ENDPOINT_URL: ${SCREENSHOT_S3_ENDPOINT_URL:-http://rustfs:9000}
+      SCREENSHOT_S3_FORCE_PATH_STYLE: ${SCREENSHOT_S3_FORCE_PATH_STYLE:-1}
+      SCREENSHOT_S3_PREFIX: ${SCREENSHOT_S3_PREFIX:-screenshots}
+      SCREENSHOT_S3_REGION: ${SCREENSHOT_S3_REGION:-us-east-1}
+      SCREENSHOT_S3_SECRET_ACCESS_KEY: ${SCREENSHOT_S3_SECRET_ACCESS_KEY:-ecoindex-secret-key-change-me}
       TZ: ${TZ:-Europe/Paris}
       ENABLE_SCREENSHOT: ${ENABLE_SCREENSHOT:-0}
     depends_on:
       db:
         condition: service_healthy
+      rustfs-init:
+        condition: service_completed_successfully
       valkey:
         condition: service_started
     volumes:
@@ -64,6 +86,40 @@ services:
     volumes:
       - valkey:/data
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: always
+    ports:
+      - "${RUSTFS_S3_PORT:-9000}:9000"
+      - "${RUSTFS_CONSOLE_PORT:-9001}:9001"
+    environment:
+      RUSTFS_ACCESS_KEY: ${SCREENSHOT_S3_ACCESS_KEY_ID:-ecoindex-access-key}
+      RUSTFS_SECRET_KEY: ${SCREENSHOT_S3_SECRET_ACCESS_KEY:-ecoindex-secret-key-change-me}
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - rustfs_data:/data
+    command: /data
+
+  rustfs-init:
+    image: minio/mc:latest
+    depends_on:
+      rustfs:
+        condition: service_started
+    environment:
+      RUSTFS_ACCESS_KEY: ${SCREENSHOT_S3_ACCESS_KEY_ID:-ecoindex-access-key}
+      RUSTFS_BUCKET: ${SCREENSHOT_S3_BUCKET:-ecoindex-screenshots}
+      RUSTFS_SECRET_KEY: ${SCREENSHOT_S3_SECRET_ACCESS_KEY:-ecoindex-secret-key-change-me}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        until mc alias set rustfs http://rustfs:9000 "$$RUSTFS_ACCESS_KEY" "$$RUSTFS_SECRET_KEY"; do
+          sleep 1
+        done
+        mc mb --ignore-existing "rustfs/$$RUSTFS_BUCKET"
+    restart: "no"
+
 volumes:
   db:
   valkey:
+  rustfs_data:

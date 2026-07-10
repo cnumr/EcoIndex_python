@@ -166,31 +166,25 @@ tasks:
     dir: ../..
     silent: true
 
-  start-valkey:
+  start-dev-infra:
     internal: true
     cmds:
-      - |
-        set -euo pipefail
-        if docker inspect ecoindex-dev-valkey --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
-          exit 0
-        fi
-        PORT_OWNER="$(docker ps --format '{{.Names}}' --filter publish=6379 2>/dev/null | head -n1 || true)"
-        if [ -n "$PORT_OWNER" ] && [ "$PORT_OWNER" != "ecoindex-dev-valkey" ]; then
-          echo "Port 6379 is already used by container '$PORT_OWNER'."
-          echo "Stop it first, for example: docker rm -f $PORT_OWNER"
-          exit 1
-        fi
-        docker rm -f ecoindex-dev-valkey 2>/dev/null || true
-        docker run -p 6379:6379 -d --name ecoindex-dev-valkey valkey/valkey:alpine
-      - uv run python scripts/wait_valkey.py > /dev/null
+      - bash scripts/start_dev_infra.sh
     status:
       - docker inspect ecoindex-dev-valkey --format '{{.State.Running}}' 2>/dev/null | grep -q true
+      - docker inspect ecoindex-dev-rustfs --format '{{.State.Running}}' 2>/dev/null | grep -q true
     silent: true
 
   start-worker:
-    deps: [start-valkey]
+    deps: [start-dev-infra]
     cmds:
       - |
+        if [ -f projects/ecoindex_api/.env ]; then
+          set -a
+          # shellcheck disable=SC1091
+          . projects/ecoindex_api/.env
+          set +a
+        fi
         REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
         export REDIS_CACHE_HOST="$REDIS_DEV_HOST"
         export PYTHONPATH="bases:components"
@@ -202,9 +196,15 @@ tasks:
     silent: true
 
   start-backend:
-    deps: [start-valkey]
+    deps: [start-dev-infra]
     cmds:
       - |
+        if [ -f projects/ecoindex_api/.env ]; then
+          set -a
+          # shellcheck disable=SC1091
+          . projects/ecoindex_api/.env
+          set +a
+        fi
         export REDIS_CACHE_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
         export PYTHONPATH="bases:components"
         uv run --package ecoindex_api --group backend uvicorn ecoindex.backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir bases --reload-dir components
@@ -213,7 +213,7 @@ tasks:
 
   start-rq-dashboard:
     desc: Start the RQ dashboard for monitoring queues
-    deps: [start-valkey]
+    deps: [start-dev-infra]
     cmds:
       - |
         REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
@@ -229,6 +229,33 @@ tasks:
     desc: Start the backend, the worker and the RQ dashboard
     cmds:
       - echo "Starting the backend, worker and RQ dashboard (http://localhost:{{.RQ_DASHBOARD_PORT}})"
+    silent: true
+
+  stop-dev:
+    desc: Stop the backend, workers, RQ dashboard and dev Docker containers
+    cmds:
+      - |
+        set -u
+        echo "Stopping local dev processes..."
+
+        stop_port() {
+          port="$1"
+          if command -v lsof >/dev/null 2>&1; then
+            lsof -ti :"$port" 2>/dev/null | xargs -r kill 2>/dev/null || true
+          elif command -v fuser >/dev/null 2>&1; then
+            fuser -k "$port"/tcp 2>/dev/null || true
+          fi
+        }
+
+        stop_port 8000
+        stop_port {{.RQ_DASHBOARD_PORT}}
+        pkill -f "watchmedo auto-restart.*start_rq_workers.sh" 2>/dev/null || true
+        pkill -f "rq worker ecoindex" 2>/dev/null || true
+        pkill -f "uvicorn ecoindex.backend.main:app" 2>/dev/null || true
+
+        echo "Stopping Docker containers..."
+        docker rm -f ecoindex-dev-valkey ecoindex-dev-rustfs 2>/dev/null || true
+        echo "Local development environment stopped."
     silent: true
 
   init-env:

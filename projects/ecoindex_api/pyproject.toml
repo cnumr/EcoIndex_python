@@ -9,6 +9,7 @@ authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
 dependencies = [
     "aiofile>=3.8.8",
     "alembic>=1.12.1",
+    "boto3>=1.39.0",
     "rq>=2.1.0",
     "cryptography>=48.0.1",
     "fastapi>=0.109.1",
@@ -71,5 +72,6 @@ packages = ["ecoindex"]
 "../../components/ecoindex/models" = "ecoindex/models"
 "../../components/ecoindex/monitoring" = "ecoindex/monitoring"
 "../../components/ecoindex/scraper" = "ecoindex/scraper"
+"../../components/ecoindex/screenshot_storage" = "ecoindex/screenshot_storage"
 "../../components/ecoindex/utils" = "ecoindex/utils"
 "../../components/ecoindex/worker_component" = "ecoindex/worker_component"

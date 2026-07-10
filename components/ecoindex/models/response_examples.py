@@ -18,7 +18,7 @@ example_file_not_found = {
         "application/json": {
             "example": {
                 "detail": (
-                    "File at path screenshots/v0/"
+                    "Screenshot v1/"
                     "550cdf8c-9c4c-4f8a-819d-cb69d0866fe1.webp does not exist."
                 )
             }
