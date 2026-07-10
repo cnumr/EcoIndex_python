@@ -1,4 +1,3 @@
-from os import getcwd
 from typing import Annotated
 
 from ecoindex.backend.models.dependencies_parameters.dates import DateRangeParameters
@@ -22,6 +21,12 @@ from ecoindex.database.repositories.ecoindex import (
 )
 from ecoindex.models import example_ecoindex_not_found, example_file_not_found
 from ecoindex.models.enums import Version
+from ecoindex.utils.screenshot_storage import (
+    get_screenshot_local_path,
+    is_s3_screenshot_storage,
+    read_screenshot,
+    screenshot_exists,
+)
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.params import Query
 from fastapi.responses import FileResponse
@@ -128,8 +133,21 @@ async def get_screenshot_endpoint(
     id: IdParameter,
     version: VersionParameter = Version.v1,
 ):
+    if not screenshot_exists(version=version.value, screenshot_id=str(id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Screenshot {version.value}/{id}.webp does not exist.",
+        )
+
+    if is_s3_screenshot_storage():
+        return Response(
+            content=read_screenshot(version=version.value, screenshot_id=str(id)),
+            headers={"Content-Disposition": f'inline; filename="{id}.webp"'},
+            media_type="image/webp",
+        )
+
     return FileResponse(
-        path=f"{getcwd()}/screenshots/{version.value}/{id}.webp",
+        path=get_screenshot_local_path(version=version.value, screenshot_id=str(id)),
         filename=f"{id}.webp",
         content_disposition_type="inline",
         media_type="image/webp",

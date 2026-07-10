@@ -1,5 +1,4 @@
 from asyncio import run
-from os import getcwd
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -22,6 +21,10 @@ from ecoindex.models.enums import TaskStatus
 from ecoindex.models.tasks import QueueTaskError, QueueTaskResult
 from ecoindex.monitoring import capture_task_failure, init_sentry
 from ecoindex.scraper.scrap import EcoindexScraper
+from ecoindex.utils.screenshot_storage import (
+    get_screenshot_local_folder,
+    persist_screenshot,
+)
 from playwright._impl._errors import Error as WebDriverException
 from rq import get_current_job
 
@@ -59,25 +62,33 @@ async def async_ecoindex_task(
     custom_headers: dict[str, str],
 ) -> QueueTaskResult:
     try:
+        settings = Settings()
         session_generator = get_session()
         session = await session_generator.__anext__()
+        screenshot = (
+            ScreenShot(
+                id=str(task_id),
+                folder=get_screenshot_local_folder(version=Version.v1.value),
+            )
+            if settings.ENABLE_SCREENSHOT
+            else None
+        )
 
         await check_quota(session=session, host=urlparse(url=url).netloc)
 
         ecoindex = await EcoindexScraper(
             url=url,
             window_size=WindowSize(height=height, width=width),
-            wait_after_scroll=Settings().WAIT_AFTER_SCROLL,
-            wait_before_scroll=Settings().WAIT_BEFORE_SCROLL,
-            screenshot=ScreenShot(
-                id=str(task_id), folder=f"{getcwd()}/screenshots/v1"
-            )
-            if Settings().ENABLE_SCREENSHOT
-            else None,
-            screenshot_gid=Settings().SCREENSHOTS_GID,
-            screenshot_uid=Settings().SCREENSHOTS_UID,
+            wait_after_scroll=settings.WAIT_AFTER_SCROLL,
+            wait_before_scroll=settings.WAIT_BEFORE_SCROLL,
+            screenshot=screenshot,
+            screenshot_gid=settings.SCREENSHOTS_GID,
+            screenshot_uid=settings.SCREENSHOTS_UID,
             custom_headers=custom_headers,
         ).get_page_analysis()
+
+        if screenshot:
+            persist_screenshot(screenshot=screenshot, version=Version.v1.value)
 
         db_result = await save_ecoindex_result_db(
             session=session,

@@ -28,12 +28,13 @@ The API specification can be found in the [documentation](projects/ecoindex_api/
 
 ## Installation
 
-With this docker setup you get 4 services running that are enough to make it all work:
+With this docker setup you get 5 services running that are enough to make it all work:
 
 - `db`: A MySQL instance
 - `api`: The API instance running FastAPI application
 - `worker`: The RQ task worker that runs ecoindex analysis
 - `valkey`: The [Valkey](https://valkey.io/) instance (Redis-compatible) used by the RQ worker and API cache
+- `garage`: A local [Garage](https://garagehq.deuxfleurs.fr/) object storage exposing an S3-compatible API for screenshots
 
 ### First start
 
@@ -71,9 +72,46 @@ Here are the environment variables you can configure in your `.env` file:
 | API, Worker         | `RQ_RESULT_TTL`            | `86400`                            | Time in seconds before successful job results are removed from Valkey                                                                                                                                                                                                                                                                                                                                                      |
 | Worker              | `RQ_WORKERS`               | `3`                                | Number of RQ worker processes started in parallel (one job per process)                                                                                                                                                                                                                                                                                                                                                    |
 | API, Worker         | `TZ`                       | `Europe/Paris`                     | The timezone used by the API and the worker.                                                                                                                                                                                                                                                                                                                                                                               |
-| Worker              | `ENABLE_SCREENSHOT`        | `False`                            | If screenshots are enabled, when analyzing the page the image will be generated in the `./screenshot` directory with the image name corresponding to the analysis ID and will be available on the path `/{version}/ecoindexes/{id}/screenshot`                                                                                                                                                                             |
-| Worker              | `SCREENSHOT_GID`           | None                               | The group used to create the screenshot. If not set, the group of the current user will be used.                                                                                                                                                                                                                                                                                                                           |
-| Worker              | `SCREENSHOT_UID`           | None                               | The user used to create the screenshot. If not set, the current user will be used.                                                                                                                                                                                                                                                                                                                                         |
+| API, Worker         | `ENABLE_SCREENSHOT`        | `False`                            | If screenshots are enabled, the analysis generates a `.webp` image that remains available on `/{version}/ecoindexes/{id}/screenshot`. The underlying storage backend depends on `SCREENSHOT_STORAGE_TYPE`.                                                                                                                                                                                                                |
+| API, Worker         | `SCREENSHOT_STORAGE_TYPE`  | `filesystem`                       | Screenshot storage backend. Supported values are `filesystem` and `s3`. The provided Docker Compose configuration forces `s3` by default.                                                                                                                                                                                                                                                                                 |
+| API, Worker         | `SCREENSHOT_FILESYSTEM_PATH` | `./screenshots`                  | Root folder used when `SCREENSHOT_STORAGE_TYPE=filesystem`. The API reads screenshots from this path and the worker writes them there.                                                                                                                                                                                                                                                                                     |
+| API, Worker         | `SCREENSHOT_S3_ENDPOINT_URL` | ``                               | S3-compatible endpoint used when `SCREENSHOT_STORAGE_TYPE=s3` (for example `http://garage:3900` in the provided Docker Compose stack).                                                                                                                                                                                                                                                                                    |
+| API, Worker         | `SCREENSHOT_S3_REGION`     | `garage`                           | Region sent by the S3 client. This must match the S3 region configured by your object storage server.                                                                                                                                                                                                                                                                                                                       |
+| API, Worker         | `SCREENSHOT_S3_BUCKET`     | ``                                 | Bucket that stores screenshots when `SCREENSHOT_STORAGE_TYPE=s3`.                                                                                                                                                                                                                                                                                                                                                            |
+| API, Worker         | `SCREENSHOT_S3_PREFIX`     | `screenshots`                      | Optional object key prefix used inside the screenshot bucket.                                                                                                                                                                                                                                                                                                                                                                 |
+| API, Worker         | `SCREENSHOT_S3_ACCESS_KEY_ID` | ``                              | Access key used to write and read screenshots from the S3-compatible storage.                                                                                                                                                                                                                                                                                                                                                |
+| API, Worker         | `SCREENSHOT_S3_SECRET_ACCESS_KEY` | ``                           | Secret key associated with `SCREENSHOT_S3_ACCESS_KEY_ID`.                                                                                                                                                                                                                                                                                                                                                                     |
+| API, Worker         | `SCREENSHOT_S3_FORCE_PATH_STYLE` | `True`                        | Forces path-style S3 URLs. This should stay enabled for Garage and many local S3-compatible services.                                                                                                                                                                                                                                                                                                                        |
+| Worker              | `SCREENSHOTS_GID`          | None                               | The group used to create the screenshot file before it is persisted. This is mainly useful with `filesystem` storage.                                                                                                                                                                                                                                                                                                       |
+| Worker              | `SCREENSHOTS_UID`          | None                               | The user used to create the screenshot file before it is persisted. This is mainly useful with `filesystem` storage.                                                                                                                                                                                                                                                                                                        |
+
+### Screenshot storage
+
+Two screenshot storage strategies are available:
+
+- `filesystem`: the worker writes screenshots to `SCREENSHOT_FILESYSTEM_PATH` and the API serves the same shared directory.
+- `s3`: the worker creates the screenshot locally, uploads it to the configured S3-compatible bucket, then the API reads it back from object storage.
+
+The Docker Compose stack is configured to use `s3` by default with a local Garage container. This makes the default setup closer to production-style object storage while still staying self-hosted.
+
+If you want to go back to local disk storage, set:
+
+```bash
+SCREENSHOT_STORAGE_TYPE=filesystem
+SCREENSHOT_FILESYSTEM_PATH=/code/screenshots
+```
+
+When using the bundled Garage service, screenshots are uploaded to:
+
+- endpoint: `http://garage:3900`
+- bucket: `ecoindex-screenshots`
+- region: `garage`
+
+The Garage container starts with a default access key and bucket created from the Docker Compose environment variables. For any environment exposed outside local development, change:
+
+- `SCREENSHOT_S3_ACCESS_KEY_ID`
+- `SCREENSHOT_S3_SECRET_ACCESS_KEY`
+- `projects/ecoindex_api/garage.toml` secrets and tokens
 
 ## Local development with [task](https://taskfile.dev)
 

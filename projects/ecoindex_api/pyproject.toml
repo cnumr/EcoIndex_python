@@ -9,6 +9,7 @@ authors = [{ name = "Vincent Vatelot", email = "vincent.vatelot@ik.me" }]
 dependencies = [
     "aiofile>=3.8.8",
     "alembic>=1.12.1",
+    "boto3>=1.39.0",
     "rq>=2.1.0",
     "cryptography>=48.0.1",
     "fastapi>=0.109.1",

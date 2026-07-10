@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     RQ_JOB_TIMEOUT: int = 600
     RQ_RESULT_TTL: int = 86400
     RQ_WORKERS: int = 3
+    SCREENSHOT_FILESYSTEM_PATH: str = "./screenshots"
+    SCREENSHOT_STORAGE_TYPE: str = "filesystem"
+    SCREENSHOT_S3_ACCESS_KEY_ID: str = ""
+    SCREENSHOT_S3_BUCKET: str = ""
+    SCREENSHOT_S3_ENDPOINT_URL: str = ""
+    SCREENSHOT_S3_FORCE_PATH_STYLE: bool = True
+    SCREENSHOT_S3_PREFIX: str = "screenshots"
+    SCREENSHOT_S3_REGION: str = "garage"
+    SCREENSHOT_S3_SECRET_ACCESS_KEY: str = ""
     SCREENSHOTS_GID: int | None = None
     SCREENSHOTS_UID: int | None = None
     TZ: str = "Europe/Paris"
