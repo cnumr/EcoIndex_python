@@ -40,6 +40,9 @@ def test_persist_screenshot_uploads_to_s3(monkeypatch, tmp_path):
     uploads = []
 
     class FakeS3Client:
+        def head_bucket(self, Bucket):
+            pass
+
         def upload_file(self, filename, bucket, key, ExtraArgs):
             uploads.append((filename, bucket, key, ExtraArgs))
 
