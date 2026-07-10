@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "astral-sh.ty",
+        "mhutchie.git-graph"
+    ]
+}

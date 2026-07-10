@@ -50,18 +50,27 @@ Here is a diagram of the dependencies between the projects:
 
 ### Requirements
 
-- [Python 3.10+](https://www.python.org/downloads/)
-- [uv](https://docs.astral.sh/uv/getting-started/installation/)
-- [Task](https://taskfile.dev/#/installation)
-- [Docker](https://docs.docker.com/get-docker/) (optional)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) — manages the Python version and dependencies
+- [Task](https://taskfile.dev/#/installation) — task runner
+- [Docker](https://docs.docker.com/get-docker/) — for third-party services (Valkey, MySQL)
+
+Python 3.12 is installed automatically by `uv` (see `.python-version`).
 
 ### Installation
 
-To install main dependencies, run:
+To install Python and all dependencies, run:
 
 ```bash
 task uv:install
 ```
+
+For API development, also run:
+
+```bash
+task api:init-dev-project
+```
+
+This installs dependencies, Playwright, creates the `.env` file and runs database migrations.
 
 ### Usage
 

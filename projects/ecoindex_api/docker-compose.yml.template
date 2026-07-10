@@ -27,12 +27,12 @@ services:
     environment:
       DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
       DEBUG: ${DEBUG:-0}
-      REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-redis}
+      REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
       TZ: ${TZ:-Europe/Paris}
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_started
     volumes:
       - ./screenshots:/code/screenshots
@@ -45,25 +45,25 @@ services:
     environment:
       DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
       DEBUG: ${DEBUG:-0}
-      REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-redis}
+      REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
       RQ_WORKERS: ${RQ_WORKERS:-3}
       TZ: ${TZ:-Europe/Paris}
       ENABLE_SCREENSHOT: ${ENABLE_SCREENSHOT:-0}
     depends_on:
       db:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_started
     volumes:
       - ./screenshots:/code/screenshots
 
-  redis:
-    image: redis:alpine
+  valkey:
+    image: valkey/valkey:alpine
     restart: always
-    command: redis-server --save 20 1 --loglevel warning
+    command: valkey-server --save 20 1 --loglevel warning
     volumes:
-      - redis:/data
+      - valkey:/data
 
 volumes:
   db:
-  redis:
+  valkey:

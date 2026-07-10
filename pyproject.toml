@@ -55,7 +55,7 @@ api-backend = [
 ]
 dev = [
     "black>=24.3.0",
-    "mypy>=1.7.0",
+    "ty>=0.0.1",
     "polylith-cli",
     "pytest>=7.4.2",
     "pytest-asyncio>=0.21.1",
@@ -81,13 +81,21 @@ members = ["projects/*"]
 [tool.pytest.ini_options]
 filterwarnings = ["ignore::DeprecationWarning"]
 
-[tool.mypy]
-mypy_path = ["bases", "components"]
-namespace_packages = true
-explicit_package_bases = true
-ignore_missing_imports = true
-disallow_untyped_defs = false
-exclude = ["test", "dist", "__pycache__", "projects/ecoindex_api/alembic/versions"]
+[tool.ty.environment]
+extra-paths = ["bases", "components"]
+python-version = "3.12"
+
+[tool.ty.src]
+exclude = ["test", "dist", "projects/ecoindex_api/alembic/versions"]
+
+[tool.ty.rules]
+call-non-callable = "warn"
+no-matching-overload = "warn"
+unused-type-ignore-comment = "ignore"
+deprecated = "ignore"
+
+[tool.ty.terminal]
+error-on-warning = false
 
 [tool.coverage.run]
 omit = ["test/*"]

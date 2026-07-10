@@ -5,3 +5,9 @@ dist
 .coverage
 coverage.xml
 *.csv
+
+# VS Code workspace settings (recommended extensions and editor config)
+!.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json

@@ -166,24 +166,24 @@ tasks:
     dir: ../..
     silent: true
 
-  start-redis:
+  start-valkey:
     internal: true
     cmds:
       - |
-        if ! uv run python scripts/wait_redis.py > /dev/null 2>&1; then
-          docker rm -f ecoindex-dev-redis 2>/dev/null || true
-          docker run -p 6379:6379 -d --name ecoindex-dev-redis redis:alpine 2>/dev/null || docker start ecoindex-dev-redis 2>/dev/null || true
+        if ! uv run python scripts/wait_valkey.py > /dev/null 2>&1; then
+          docker rm -f ecoindex-dev-valkey 2>/dev/null || true
+          docker run -p 6379:6379 -d --name ecoindex-dev-valkey valkey/valkey:alpine 2>/dev/null || docker start ecoindex-dev-valkey 2>/dev/null || true
         fi
-      - uv run python scripts/wait_redis.py > /dev/null
+      - uv run python scripts/wait_valkey.py > /dev/null
     status:
-      - uv run python scripts/wait_redis.py > /dev/null
+      - uv run python scripts/wait_valkey.py > /dev/null
     silent: true
 
   start-worker:
-    deps: [start-redis]
+    deps: [start-valkey]
     cmds:
       - |
-        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
         export REDIS_CACHE_HOST="$REDIS_DEV_HOST"
         export PYTHONPATH="bases:components"
         export RQ_WORKERS="{{.RQ_WORKERS}}"
@@ -194,10 +194,10 @@ tasks:
     silent: true
 
   start-backend:
-    deps: [start-redis]
+    deps: [start-valkey]
     cmds:
       - |
-        export REDIS_CACHE_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        export REDIS_CACHE_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
         export PYTHONPATH="bases:components"
         uv run --package ecoindex_api --group backend uvicorn ecoindex.backend.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir bases --reload-dir components
     dir: ../..
@@ -205,10 +205,10 @@ tasks:
 
   start-rq-dashboard:
     desc: Start the RQ dashboard for monitoring queues
-    deps: [start-redis]
+    deps: [start-valkey]
     cmds:
       - |
-        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_redis.py)"
+        REDIS_DEV_HOST="$(uv run python projects/ecoindex_api/scripts/wait_valkey.py)"
         uv run --package ecoindex_api --group dev rq-dashboard \
           --bind 0.0.0.0 \
           --port {{.RQ_DASHBOARD_PORT}} \
