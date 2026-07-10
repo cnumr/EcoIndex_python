@@ -170,13 +170,21 @@ tasks:
     internal: true
     cmds:
       - |
-        if ! uv run python scripts/wait_valkey.py > /dev/null 2>&1; then
-          docker rm -f ecoindex-dev-valkey 2>/dev/null || true
-          docker run -p 6379:6379 -d --name ecoindex-dev-valkey valkey/valkey:alpine 2>/dev/null || docker start ecoindex-dev-valkey 2>/dev/null || true
+        set -euo pipefail
+        if docker inspect ecoindex-dev-valkey --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
+          exit 0
         fi
+        PORT_OWNER="$(docker ps --format '{{.Names}}' --filter publish=6379 2>/dev/null | head -n1 || true)"
+        if [ -n "$PORT_OWNER" ] && [ "$PORT_OWNER" != "ecoindex-dev-valkey" ]; then
+          echo "Port 6379 is already used by container '$PORT_OWNER'."
+          echo "Stop it first, for example: docker rm -f $PORT_OWNER"
+          exit 1
+        fi
+        docker rm -f ecoindex-dev-valkey 2>/dev/null || true
+        docker run -p 6379:6379 -d --name ecoindex-dev-valkey valkey/valkey:alpine
       - uv run python scripts/wait_valkey.py > /dev/null
     status:
-      - uv run python scripts/wait_valkey.py > /dev/null
+      - docker inspect ecoindex-dev-valkey --format '{{.State.Running}}' 2>/dev/null | grep -q true
     silent: true
 
   start-worker:
