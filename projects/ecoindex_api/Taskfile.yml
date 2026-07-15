@@ -170,14 +170,12 @@ tasks:
     desc: Create a new alembic migration
     cmds:
       - uv run --package ecoindex_api alembic revision --autogenerate -m "{{.CLI_ARGS}}"
-    dir: ../..
     silent: true
 
   migration-upgrade:
     desc: Upgrade the database to the last migration
     cmds:
       - uv run --package ecoindex_api alembic upgrade head
-    dir: ../..
     silent: true
 
   start-dev-infra:
