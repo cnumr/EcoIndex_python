@@ -1,8 +1,8 @@
 from typing import Annotated
-from urllib.parse import urlparse, urlunparse
 
-import idna
 import requests
+from pydantic import TypeAdapter
+from pydantic.networks import AnyHttpUrl
 from ecoindex.backend.dependencies.validation import validate_api_key_batch
 from ecoindex.backend.models.dependencies_parameters.id import IdParameter
 from ecoindex.backend.utils import check_quota
@@ -42,42 +42,8 @@ def convert_url_to_punycode(url: str) -> str:
     """
     Convert an URL with emoji domain (or any Unicode domain) to Punycode.
     This makes the URL compatible with requests library.
-
-    Args:
-        url: The URL string that may contain Unicode characters in the domain
-
-    Returns:
-        The URL with the domain converted to Punycode
     """
-    parsed = urlparse(url)
-
-    # Extract the hostname (netloc may contain port, so we need to handle that)
-    hostname = parsed.hostname
-    if not hostname:
-        return url
-
-    try:
-        # Convert the hostname to Punycode
-        hostname_punycode = idna.encode(hostname).decode("ascii")
-
-        # Reconstruct the netloc with the converted hostname
-        if parsed.port:
-            netloc = f"{hostname_punycode}:{parsed.port}"
-        else:
-            netloc = hostname_punycode
-
-        # Reconstruct the URL with the converted hostname
-        return urlunparse((
-            parsed.scheme,
-            netloc,
-            parsed.path,
-            parsed.params,
-            parsed.query,
-            parsed.fragment,
-        ))
-    except (idna.IDNAError, UnicodeError):
-        # If conversion fails, return the original URL
-        return url
+    return str(TypeAdapter(AnyHttpUrl).validate_python(url))
 
 
 def _enqueue_settings(*, with_retry: bool = True) -> dict[str, object]:
@@ -166,7 +132,7 @@ async def add_ecoindex_analysis_task(
 
     job = ecoindex_queue.enqueue(
         ecoindex_task,
-        url=str(web_page.url),
+        url=url_for_request,
         width=web_page.width,
         height=web_page.height,
         custom_headers=headers,
