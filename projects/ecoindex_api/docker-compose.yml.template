@@ -1,9 +1,10 @@
 services:
-  db:
-    image: mysql
+  db-mysql:
+    profiles: ["mysql"]
+    image: mysql:8
     restart: always
     volumes:
-      - db:/var/lib/mysql
+      - db-mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: ${DB_NAME:-ecoindex}
       MYSQL_USER: ${DB_USER:-ecoindex}
@@ -17,6 +18,24 @@ services:
       retries: 10
       interval: 2s
 
+  db-postgres:
+    profiles: ["postgres"]
+    image: postgres:16-alpine
+    restart: always
+    volumes:
+      - db-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ecoindex}
+      POSTGRES_USER: ${DB_USER:-ecoindex}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ecoindex}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      timeout: 5s
+      retries: 10
+      interval: 2s
+
   backend:
     image: vvatelot/ecoindex-api-backend:${API_VERSION:-latest}
     restart: always
@@ -25,7 +44,12 @@ services:
     ports:
       - "${API_PORT:-8001}:8000"
     environment:
-      DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
+      DB_ENGINE: ${DB_ENGINE:-mysql}
+      DB_HOST: ${DB_HOST:-db-mysql}
+      DB_PORT: ${DB_PORT:-}
+      DB_USER: ${DB_USER:-ecoindex}
+      DB_PASSWORD: ${DB_PASSWORD:-ecoindex}
+      DB_NAME: ${DB_NAME:-ecoindex}
       DEBUG: ${DEBUG:-0}
       REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
       SCREENSHOT_FILESYSTEM_PATH: ${SCREENSHOT_FILESYSTEM_PATH:-/code/screenshots}
@@ -39,8 +63,12 @@ services:
       SCREENSHOT_S3_SECRET_ACCESS_KEY: ${SCREENSHOT_S3_SECRET_ACCESS_KEY:-ecoindex-secret-key-change-me}
       TZ: ${TZ:-Europe/Paris}
     depends_on:
-      db:
+      db-mysql:
         condition: service_healthy
+        required: false
+      db-postgres:
+        condition: service_healthy
+        required: false
       rustfs-init:
         condition: service_completed_successfully
       valkey:
@@ -54,7 +82,12 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: mysql+aiomysql://${DB_USER:-ecoindex}:${DB_PASSWORD:-ecoindex}@${DB_HOST:-db}/${DB_NAME:-ecoindex}?charset=utf8mb4
+      DB_ENGINE: ${DB_ENGINE:-mysql}
+      DB_HOST: ${DB_HOST:-db-mysql}
+      DB_PORT: ${DB_PORT:-}
+      DB_USER: ${DB_USER:-ecoindex}
+      DB_PASSWORD: ${DB_PASSWORD:-ecoindex}
+      DB_NAME: ${DB_NAME:-ecoindex}
       DEBUG: ${DEBUG:-0}
       REDIS_CACHE_HOST: ${REDIS_CACHE_HOST:-valkey}
       RQ_WORKERS: ${RQ_WORKERS:-3}
@@ -70,8 +103,12 @@ services:
       TZ: ${TZ:-Europe/Paris}
       ENABLE_SCREENSHOT: ${ENABLE_SCREENSHOT:-0}
     depends_on:
-      db:
+      db-mysql:
         condition: service_healthy
+        required: false
+      db-postgres:
+        condition: service_healthy
+        required: false
       rustfs-init:
         condition: service_completed_successfully
       valkey:
@@ -120,6 +157,7 @@ services:
     restart: "no"
 
 volumes:
-  db:
+  db-mysql:
+  db-postgres:
   valkey:
   rustfs_data:

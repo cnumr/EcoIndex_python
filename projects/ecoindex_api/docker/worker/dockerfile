@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
 COPY projects/ecoindex_api/dist/$wheel $wheel
 RUN pip install --no-cache-dir $wheel
-RUN pip install --no-cache-dir aiomysql
+RUN pip install --no-cache-dir aiomysql asyncpg
 
 RUN playwright install chromium --with-deps
 

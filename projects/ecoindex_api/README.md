@@ -30,7 +30,7 @@ The API specification can be found in the [documentation](projects/ecoindex_api/
 
 With this docker setup you get 5 services running that are enough to make it all work:
 
-- `db`: A MySQL instance
+- `db-mysql` or `db-postgres`: database instance (selected with `DB_ENGINE`)
 - `api`: The API instance running FastAPI application
 - `worker`: The RQ task worker that runs ecoindex analysis
 - `valkey`: The [Valkey](https://valkey.io/) instance (Redis-compatible) used by the RQ worker and API cache
@@ -40,7 +40,16 @@ With this docker setup you get 5 services running that are enough to make it all
 
 ```bash
 cp docker-compose.yml.template docker-compose.yml && \
-docker  compose up -d
+cp .env.template .env && \
+task api:docker-up-mysql -- -d
+```
+
+For PostgreSQL instead:
+
+```bash
+cp docker-compose.yml.template docker-compose.yml && \
+cp .env.template .env && \
+task api:docker-up-postgres -- -d
 ```
 
 Every services should start normaly, then you can go to:
@@ -62,7 +71,13 @@ Here are the environment variables you can configure in your `.env` file:
 | API                 | `CORS_ALLOWED_ORIGINS`     | `*`                                | See [MDN web doc](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin)                                                                                                                                                                                                                                                                                                                   |
 | API                 | `EXCLUDED_HOSTS`           | `["localhost", "127.0.0.1"]`       | You can configure a list of hosts that will be excluded from the analysis.                                                                                                                                                                                                                                                                                                                                                 |
 | API, Worker         | `DAILY_LIMIT_PER_HOST`     | 0                                  | When this variable is set, it won't be possible for a same host to make more request than defined in the same day to avoid overload. If the variable is set, you will get a header `x-remaining-daily-requests: 6` in your response. It is used for the POST methods. If you reach your authorized request quota for the day, the next requests will give you a 429 response. If the variable is set to 0, no limit is set |
-| API, Worker         | `DATABASE_URL`             | `sqlite+aiosqlite:///./sql_app.db` | If you run your mysql instance on a dedicated server, you can configure it with your credentials. By default, it uses an sqlite database when running in local                                                                                                                                                                                                                                                             |  |
+| API, Worker         | `DB_ENGINE`                | `sqlite`                           | Database backend: `sqlite`, `mysql` or `postgres`. Used to build `DATABASE_URL` when it is not set explicitly.                                                                                                                                                                                                                                              |
+| API, Worker         | `DB_HOST`                  | `localhost`                        | Database host. Use `db-mysql` or `db-postgres` in Docker Compose.                                                                                                                                                                                                                                                                                          |
+| API, Worker         | `DB_PORT`                  | `3306` / `5432`                    | Database port. Defaults to the standard port of the selected engine when omitted.                                                                                                                                                                                                                                                                           |
+| API, Worker         | `DB_USER`                  | `ecoindex`                         | Database user.                                                                                                                                                                                                                                                                                                                                              |
+| API, Worker         | `DB_PASSWORD`              | `ecoindex`                         | Database password.                                                                                                                                                                                                                                                                                                                                          |
+| API, Worker         | `DB_NAME`                  | `ecoindex`                         | Database name.                                                                                                                                                                                                                                                                                                                                              |
+| API, Worker         | `DATABASE_URL`             | built from `DB_ENGINE`             | Optional explicit SQLAlchemy URL. When set, it overrides `DB_ENGINE` and related variables. Examples: `sqlite+aiosqlite:///db.sqlite3`, `mysql+aiomysql://user:pass@host/db?charset=utf8mb4`, `postgresql+asyncpg://user:pass@host:5432/db`                                                                                                                |
 | API, Worker         | `SENTRY_DSN`               | ``                                 | If you want to use [Sentry](https://sentry.io/) to monitor your application, set this variable with your project DSN.                                                                                                                                                                                                                                                                                                      |
 | API, Worker         | `SENTRY_ENVIRONMENT`       | ``                                 | Optional Sentry environment name (e.g. `production`, `staging`). If not set, defaults to `development` when `DEBUG=True`, otherwise `production`.                                                                                                                                                                                                                                                                    |
 | API, Worker         | `SENTRY_TRACES_SAMPLE_RATE`| `0.0`                              | Fraction of transactions to send to Sentry for performance monitoring (0.0 to 1.0). Set to `0.1` in production to sample 10% of requests.                                                                                                                                                                                                                                                                                 |
@@ -132,7 +147,13 @@ task api:init-dev-project # Initialize API dev environment (Playwright, .env, mi
 
 ### Run the API locally
 
-Valkey and RustFS are started automatically via Docker. Then run:
+Valkey and RustFS are started automatically via Docker. Set `DB_ENGINE` in `.env` to choose the database:
+
+- `sqlite` (default): no database container, file stored locally
+- `mysql`: starts a local MySQL container on port 3306
+- `postgres`: starts a local PostgreSQL container on port 5432
+
+Then run:
 
 ```bash
 task api:start-dev
