@@ -123,11 +123,16 @@ async def add_ecoindex_analysis_task(
         )
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
+        error_detail = (
+            str(e.response.status_code)
+            if e.response is not None
+            else str(e)
+        )
         raise HTTPException(
             status_code=e.response.status_code
-            if e.response
+            if e.response is not None
             else status.HTTP_400_BAD_REQUEST,
-            detail=f"The URL {web_page.url} is unreachable. Are you really sure of this url? 🤔 ({e.response.status_code if e.response else ''})",
+            detail=f"The URL {web_page.url} is unreachable. Are you really sure of this url? 🤔 ({error_detail})",
         )
 
     job = ecoindex_queue.enqueue(
