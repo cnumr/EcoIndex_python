@@ -121,10 +121,24 @@ tasks:
     silent: true
 
   docker-up:
-    desc: Start the docker-compose API
+    desc: Start the docker-compose API (uses DB_ENGINE from .env, default mysql)
     deps: [init-env, init-docker-compose]
     cmds:
-      - docker compose up {{.CLI_ARGS}}
+      - bash scripts/docker_compose_up.sh {{.CLI_ARGS}}
+    silent: true
+
+  docker-up-mysql:
+    desc: Start the docker-compose API with MySQL
+    deps: [init-env, init-docker-compose]
+    cmds:
+      - DB_ENGINE=mysql DB_HOST=db-mysql DB_PORT=3306 bash scripts/docker_compose_up.sh {{.CLI_ARGS}}
+    silent: true
+
+  docker-up-postgres:
+    desc: Start the docker-compose API with PostgreSQL
+    deps: [init-env, init-docker-compose]
+    cmds:
+      - DB_ENGINE=postgres DB_HOST=db-postgres DB_PORT=5432 bash scripts/docker_compose_up.sh {{.CLI_ARGS}}
     silent: true
 
   docker-down:
@@ -132,7 +146,7 @@ tasks:
     preconditions:
       - test -f docker-compose.yml
     cmds:
-      - docker compose down {{.CLI_ARGS}}
+      - docker compose --profile mysql --profile postgres down {{.CLI_ARGS}}
     silent: true
 
   docker-exec:
@@ -170,9 +184,6 @@ tasks:
     internal: true
     cmds:
       - bash scripts/start_dev_infra.sh
-    status:
-      - docker inspect ecoindex-dev-valkey --format '{{.State.Running}}' 2>/dev/null | grep -q true
-      - docker inspect ecoindex-dev-rustfs --format '{{.State.Running}}' 2>/dev/null | grep -q true
     silent: true
 
   start-worker:
@@ -226,7 +237,7 @@ tasks:
 
   start-dev:
     deps: [start-backend, start-worker, start-rq-dashboard]
-    desc: Start the backend, the worker and the RQ dashboard
+    desc: Start the backend, the worker and the RQ dashboard (set DB_ENGINE in .env)
     cmds:
       - echo "Starting the backend, worker and RQ dashboard (http://localhost:{{.RQ_DASHBOARD_PORT}})"
     silent: true
@@ -254,7 +265,7 @@ tasks:
         pkill -f "uvicorn ecoindex.backend.main:app" 2>/dev/null || true
 
         echo "Stopping Docker containers..."
-        docker rm -f ecoindex-dev-valkey ecoindex-dev-rustfs 2>/dev/null || true
+        docker rm -f ecoindex-dev-valkey ecoindex-dev-rustfs ecoindex-dev-mysql ecoindex-dev-postgres 2>/dev/null || true
         echo "Local development environment stopped."
     silent: true
 

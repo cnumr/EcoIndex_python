@@ -11,6 +11,8 @@ if [ -f .env ]; then
   set +a
 fi
 
+DB_ENGINE="${DB_ENGINE:-sqlite}"
+
 ensure_container() {
   local lock_file="$1"
   local name="$2"
@@ -63,3 +65,39 @@ ensure_container \
   /data
 
 bash scripts/init_rustfs_bucket.sh
+
+case "$DB_ENGINE" in
+  mysql)
+    ensure_container \
+      /tmp/ecoindex-dev-mysql.lock \
+      ecoindex-dev-mysql \
+      "${DB_PORT:-3306}" \
+      -p "${DB_PORT:-3306}:3306" \
+      -e MYSQL_DATABASE="${DB_NAME:-ecoindex}" \
+      -e MYSQL_USER="${DB_USER:-ecoindex}" \
+      -e MYSQL_PASSWORD="${DB_PASSWORD:-ecoindex}" \
+      -e MYSQL_ROOT_PASSWORD="${DB_PASSWORD:-ecoindex}" \
+      -v ecoindex-dev-mysql-data:/var/lib/mysql \
+      mysql:8
+    ECOINDEX_DEV_DB_CONTAINER=ecoindex-dev-mysql bash scripts/wait_db.sh
+    ;;
+  postgres)
+    ensure_container \
+      /tmp/ecoindex-dev-postgres.lock \
+      ecoindex-dev-postgres \
+      "${DB_PORT:-5432}" \
+      -p "${DB_PORT:-5432}:5432" \
+      -e POSTGRES_DB="${DB_NAME:-ecoindex}" \
+      -e POSTGRES_USER="${DB_USER:-ecoindex}" \
+      -e POSTGRES_PASSWORD="${DB_PASSWORD:-ecoindex}" \
+      -v ecoindex-dev-postgres-data:/var/lib/postgresql/data \
+      postgres:16-alpine
+    ECOINDEX_DEV_DB_CONTAINER=ecoindex-dev-postgres bash scripts/wait_db.sh
+    ;;
+  sqlite)
+    ;;
+  *)
+    echo "Unsupported DB_ENGINE for local dev: $DB_ENGINE" >&2
+    exit 1
+    ;;
+esac
