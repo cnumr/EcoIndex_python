@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     CORS_ALLOWED_METHODS: list = ["*"]
     CORS_ALLOWED_ORIGINS: list = ["*"]
     DAILY_LIMIT_PER_HOST: int = 0
-    DATABASE_URL: str | None = None
+    DATABASE_URL: str = ""
     DB_ENGINE: DbEngine = "sqlite"
     DB_HOST: str = "localhost"
     DB_PORT: int | None = None
@@ -79,7 +79,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def resolve_database_url(self) -> "Settings":
-        if self.DATABASE_URL is None:
+        if not self.DATABASE_URL:
             self.DATABASE_URL = build_database_url(
                 engine=self.DB_ENGINE,
                 host=self.DB_HOST,
