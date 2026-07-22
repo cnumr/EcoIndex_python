@@ -11,7 +11,7 @@ dependencies = [
     "playwright-stealth>=1.0.6",
     "pydantic>=2.4.2",
     "pyyaml>=6.0.1",
-    "setuptools>=69.5.1,<79.0.0",
+    "setuptools>=83.0.0,<84.0.0",
     "typing-extensions>=4.8.0",
     "ua-generator>=2.0.5",
 ]

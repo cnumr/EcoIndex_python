@@ -16,7 +16,7 @@ dependencies = [
     "python-slugify>=8.0.4",
     "redis[hiredis]>=5.0.1",
     "requests>=2.32.4",
-    "setuptools>=78.1.1",
+    "setuptools>=83.0.0",
     "tomli>=2.0.1",
 ]
 
