@@ -8,7 +8,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-router.include_router(router=router_bff)
+router.include_router(router=router_bff, include_in_schema=False)
 router.include_router(router=router_ecoindex)
 router.include_router(router=router_compute)
 router.include_router(router=router_host)

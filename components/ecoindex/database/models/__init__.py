@@ -1,7 +1,9 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from ecoindex.models.compute import Result
+from ecoindex.models.scraper import RequestDetail
 from pydantic import BaseModel
+from sqlalchemy import Column, Text
 from sqlmodel import Field, SQLModel
 
 
@@ -48,7 +50,62 @@ class ApiEcoindex(SQLModel, Result, table=True):  # type: ignore
     )
 
 
+class ApiEcoindexRequest(SQLModel, table=True):
+    id: UUID = Field(
+        default_factory=uuid4,
+        primary_key=True,
+        description="Request detail ID of type `UUID`",
+    )
+    analysis_id: UUID = Field(
+        default=...,
+        foreign_key="apiecoindex.id",
+        index=True,
+        description="ID of the related ecoindex analysis",
+    )
+    category: str = Field(
+        default=...,
+        title="Request category",
+        description="Category of the resource (html, css, javascript, image, ...)",
+    )
+    domain: str = Field(
+        default=...,
+        title="Request domain",
+        description="Domain that served the resource",
+    )
+    status: int = Field(
+        default=...,
+        title="HTTP status",
+        description="HTTP status code of the resource response",
+    )
+    url: str = Field(
+        default=...,
+        sa_column=Column(Text(), nullable=False),
+        title="Request URL",
+        description="URL of the resource without query parameters",
+    )
+    size: float = Field(
+        default=...,
+        title="Request size",
+        description="Transfer size of the resource in bytes",
+    )
+
+
+class ApiEcoindexBatchItem(Result):
+    id: UUID | None = None
+    host: str
+    version: int = 1
+    initial_ranking: int | None = None
+    initial_total_results: int | None = None
+    source: str | None = None
+    request_details: list[RequestDetail] | None = Field(
+        default=None,
+        title="Request details",
+        description="Optional list of requests made by the page",
+    )
+
+
 ApiEcoindexes = list[ApiEcoindex]
+ApiEcoindexBatchItems = list[ApiEcoindexBatchItem]
 
 
 class PageApiEcoindexes(BaseModel):

@@ -3,7 +3,7 @@ from typing import cast
 from uuid import UUID
 
 from ecoindex.database.helper import date_filter
-from ecoindex.database.models import ApiEcoindex
+from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest
 from ecoindex.models import Result
 from ecoindex.models.enums import Version
 from ecoindex.models.sort import Sort
@@ -98,6 +98,17 @@ async def get_ecoindex_result_by_id_db(
     ecoindex = await session.exec(statement)
 
     return ecoindex.one_or_none()
+
+
+async def get_requests_by_analysis_id_db(
+    session: AsyncSession, analysis_id: UUID
+) -> list[ApiEcoindexRequest]:
+    statement = select(ApiEcoindexRequest).where(
+        ApiEcoindexRequest.analysis_id == analysis_id
+    )
+    result = await session.exec(statement)
+
+    return list(result.all())
 
 
 async def get_count_daily_request_per_host(session: AsyncSession, host: str) -> int:

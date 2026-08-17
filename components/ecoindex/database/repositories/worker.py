@@ -1,12 +1,13 @@
 from uuid import UUID
 
-from ecoindex.database.models import ApiEcoindex
+from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest
 from ecoindex.database.repositories.ecoindex import (
     get_count_analysis_db,
     get_rank_analysis_db,
 )
 from ecoindex.models import Result
 from ecoindex.models.enums import Version
+from ecoindex.models.scraper import RequestDetail, strip_query_params
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 
@@ -16,6 +17,7 @@ async def save_ecoindex_result_db(
     ecoindex_result: Result,
     version: Version = Version.v1,
     source: str | None = None,
+    requests: list[RequestDetail] | None = None,
 ) -> ApiEcoindex:
     ranking = await get_rank_analysis_db(
         session=session, ecoindex=ecoindex_result, version=version
@@ -45,6 +47,20 @@ async def save_ecoindex_result_db(
     )
 
     session.add(db_ecoindex)
+    if requests:
+        session.add_all(
+            [
+                ApiEcoindexRequest(
+                    analysis_id=id,
+                    category=item.category,
+                    domain=item.domain,
+                    status=item.status,
+                    url=strip_query_params(item.url),
+                    size=item.size,
+                )
+                for item in requests
+            ]
+        )
     try:
         await session.commit()
         await session.refresh(db_ecoindex)

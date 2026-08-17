@@ -18,9 +18,15 @@ from ecoindex.database.repositories.ecoindex import (
     get_count_analysis_db,
     get_ecoindex_result_by_id_db,
     get_ecoindex_result_list_db,
+    get_requests_by_analysis_id_db,
 )
 from ecoindex.models import example_ecoindex_not_found, example_file_not_found
 from ecoindex.models.enums import Version
+from ecoindex.models.scraper import (
+    RequestDetail,
+    RequestsDetailResponse,
+    aggregate_request_details,
+)
 from ecoindex.screenshot_storage import (
     get_screenshot_local_path,
     is_s3_screenshot_storage,
@@ -121,6 +127,54 @@ async def get_ecoindex_analysis_by_id(
             detail=f"Analysis {id} not found for version {version.value}",
         )
     return ecoindex
+
+
+@router.get(
+    name="Get ecoindex analysis requests by id",
+    path="/{id}/requests",
+    response_model=RequestsDetailResponse | None,
+    response_description="Request details of the ecoindex analysis",
+    responses={status.HTTP_404_NOT_FOUND: example_ecoindex_not_found},
+    description=(
+        "This returns the detailed list of requests made by the page, "
+        "aggregated by category and by domain. Returns `null` when the "
+        "analysis exists but request details were not collected."
+    ),
+)
+async def get_ecoindex_analysis_requests_by_id(
+    id: IdParameter,
+    version: VersionParameter = Version.v1,
+    session: AsyncSession = Depends(get_session),
+) -> RequestsDetailResponse | None:
+    ecoindex = await get_ecoindex_result_by_id_db(
+        session=session, id=id, version=version
+    )
+
+    if not ecoindex:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Analysis {id} not found for version {version.value}",
+        )
+
+    request_rows = await get_requests_by_analysis_id_db(
+        session=session, analysis_id=id
+    )
+    if not request_rows:
+        return None
+
+    return aggregate_request_details(
+        [
+            RequestDetail(
+                id=row.id,
+                category=row.category,
+                domain=row.domain,
+                status=row.status,
+                url=row.url,
+                size=row.size,
+            )
+            for row in request_rows
+        ]
+    )
 
 
 @router.get(

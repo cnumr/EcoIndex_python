@@ -18,7 +18,15 @@ from ecoindex.models.response_examples import (
     example_file_not_found,
     example_page_listing_empty,
 )
-from ecoindex.models.scraper import RequestItem, Requests
+from ecoindex.models.scraper import (
+    RequestDetail,
+    RequestItem,
+    Requests,
+    RequestsDetailResponse,
+    aggregate_request_details,
+    get_domain_from_url,
+    strip_query_params,
+)
 from ecoindex.models.sort import Sort
 
 __all__ = [
@@ -33,8 +41,13 @@ __all__ = [
     "PageMetrics",
     "PageType",
     "Request",
+    "RequestDetail",
     "RequestItem",
     "Requests",
+    "RequestsDetailResponse",
+    "aggregate_request_details",
+    "get_domain_from_url",
+    "strip_query_params",
     "Result",
     "ScreenShot",
     "Sort",

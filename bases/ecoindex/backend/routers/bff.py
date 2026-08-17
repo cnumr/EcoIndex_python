@@ -11,7 +11,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.responses import RedirectResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-router = router = APIRouter(prefix="/{version}/ecoindexes", tags=["BFF"])
+router = APIRouter(
+    prefix="/{version}/ecoindexes",
+    tags=["BFF"],
+    deprecated=True,
+    include_in_schema=False,
+)
 
 
 @router.get(
@@ -19,6 +24,8 @@ router = router = APIRouter(prefix="/{version}/ecoindexes", tags=["BFF"])
     path="/latest",
     response_model=EcoindexSearchResults,
     response_description="Get latest results for a given url",
+    deprecated=True,
+    include_in_schema=False,
 )
 async def get_latest_results(
     response: Response,
@@ -26,6 +33,8 @@ async def get_latest_results(
     session: AsyncSession = Depends(get_session),
 ) -> EcoindexSearchResults:
     """
+    **Deprecated.** Use the Ecoindex BFF service instead.
+
     This returns the latest results for a given url. This feature is used by the Ecoindex
     browser extension. By default, the results are cached for 7 days.
 
@@ -49,6 +58,8 @@ async def get_latest_results(
     path="/latest/badge",
     response_description="Badge of the given url from [CDN V1](https://www.jsdelivr.com/package/gh/cnumr/ecoindex_badge)",
     responses={status.HTTP_404_NOT_FOUND: example_file_not_found},
+    deprecated=True,
+    include_in_schema=False,
 )
 async def get_badge_enpoint(
     parameters: BffDepParameters,
@@ -58,6 +69,8 @@ async def get_badge_enpoint(
     session: AsyncSession = Depends(get_session),
 ) -> Response:
     """
+    **Deprecated.** Use the Ecoindex BFF service instead.
+
     This returns the SVG badge of the given url. This feature is used by the Ecoindex
     badge. By default, the results are cached for 7 days.
 
@@ -79,12 +92,16 @@ async def get_badge_enpoint(
     name="Get latest results redirect",
     path="/latest/redirect",
     response_description="Redirect to the latest results for a given url",
+    deprecated=True,
+    include_in_schema=False,
 )
 async def get_latest_result_redirect(
     parameters: BffDepParameters,
     session: AsyncSession = Depends(get_session),
 ) -> RedirectResponse:
     """
+    **Deprecated.** Use the Ecoindex BFF service instead.
+
     This redirects to the latest results on the frontend website for the given url.
     This feature is used by the Ecoindex browser extension and badge.
 

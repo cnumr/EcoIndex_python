@@ -1,9 +1,10 @@
 import json
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from ecoindex.exceptions.scraper import EcoindexScraperStatusException
 from ecoindex.models import ScreenShot, WindowSize
+from ecoindex.models.scraper import get_domain_from_url
 from ecoindex.scraper import EcoindexScraper
 
 
@@ -195,3 +196,55 @@ async def test_check_page_response():
         )
         is None
     )
+
+
+def test_get_domain_from_url() -> None:
+    assert get_domain_from_url("https://www.ecoindex.fr/") == "www.ecoindex.fr"
+    assert get_domain_from_url("https://cdn.example.com/assets/app.js") == (
+        "cdn.example.com"
+    )
+    assert get_domain_from_url("https://localhost:8000/page/") == "localhost:8000"
+
+
+@pytest.mark.asyncio
+async def test_get_requests_from_har_file_includes_domain() -> None:
+    har_content = {
+        "log": {
+            "entries": [
+                {
+                    "request": {"url": "https://www.ecoindex.fr/"},
+                    "response": {
+                        "status": 200,
+                        "content": {"mimeType": "text/html"},
+                        "_transferSize": 1000,
+                    },
+                },
+                {
+                    "request": {
+                        "url": "https://cdn.ecoindex.fr/css/bundle.css"
+                    },
+                    "response": {
+                        "status": 200,
+                        "content": {"mimeType": "text/css"},
+                        "_transferSize": 500,
+                    },
+                },
+            ]
+        }
+    }
+    scraper = EcoindexScraper(url="https://www.ecoindex.fr")  # type: ignore
+    scraper.har_temp_file_path = "/tmp/test.har"
+
+    with patch("builtins.open", mock_open(read_data=json.dumps(har_content))):
+        with patch("os.remove"):
+            await scraper.get_requests_from_har_file()
+
+    requests = await scraper.get_all_requests()
+    assert requests[0].domain == "www.ecoindex.fr"
+    assert requests[1].domain == "cdn.ecoindex.fr"
+
+    requests_by_domain = await scraper.get_requests_by_domain()
+    assert requests_by_domain["www.ecoindex.fr"].total_count == 1
+    assert requests_by_domain["www.ecoindex.fr"].total_size == 1000
+    assert requests_by_domain["cdn.ecoindex.fr"].total_count == 1
+    assert requests_by_domain["cdn.ecoindex.fr"].total_size == 500

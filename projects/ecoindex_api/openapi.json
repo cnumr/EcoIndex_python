@@ -223,13 +223,233 @@
         "title": "ApiEcoindex",
         "type": "object"
       },
-      "BadgeTheme": {
-        "enum": [
-          "dark",
-          "light"
+      "ApiEcoindexBatchItem": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date of the analysis",
+            "title": "Analysis datetime"
+          },
+          "ecoindex_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "5.10.0",
+            "description": "Is the version of the ecoindex used to compute the score",
+            "title": "Ecoindex version"
+          },
+          "ges": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Is the equivalent of greenhouse gases emission (in `gCO2e`) of the page",
+            "title": "Ecoindex GES equivalent"
+          },
+          "grade": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Grade"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Is the corresponding ecoindex grade of the page (from A to G)",
+            "title": "Ecoindex grade"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "maximum": 2160.0,
+                "minimum": 50.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 1080,
+            "description": "Height of the simulated window in pixel",
+            "title": "Page Height"
+          },
+          "host": {
+            "title": "Host",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "initial_ranking": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Ranking"
+          },
+          "initial_total_results": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Total Results"
+          },
+          "nodes": {
+            "description": "Is the number of the DOM elements in the page",
+            "minimum": 0.0,
+            "title": "Page nodes",
+            "type": "integer"
+          },
+          "page_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Is the type of the page, based ton the [opengraph type tag](https://ogp.me/#types)",
+            "title": "Page type"
+          },
+          "request_details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RequestDetail"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional list of requests made by the page",
+            "title": "Request details"
+          },
+          "requests": {
+            "description": "Is the number of external requests made by the page",
+            "minimum": 0.0,
+            "title": "Page requests",
+            "type": "integer"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Is the corresponding ecoindex score of the page (0 to 100)",
+            "title": "Ecoindex score"
+          },
+          "size": {
+            "description": "Is the size of the page and of the downloaded elements of the page in KB",
+            "minimum": 0.0,
+            "title": "Page size",
+            "type": "number"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "url": {
+            "description": "Url of the analysed page",
+            "examples": [
+              "https://www.ecoindex.fr"
+            ],
+            "title": "Page url",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          },
+          "water": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Is the equivalent water consumption (in `cl`) of the page",
+            "title": "Ecoindex Water equivalent"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "maximum": 3840.0,
+                "minimum": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": 1920,
+            "description": "Width of the simulated window in pixel",
+            "title": "Page Width"
+          }
+        },
+        "required": [
+          "url",
+          "size",
+          "nodes",
+          "requests",
+          "host"
         ],
-        "title": "BadgeTheme",
-        "type": "string"
+        "title": "ApiEcoindexBatchItem",
+        "type": "object"
       },
       "Body_Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post": {
         "properties": {
@@ -241,6 +461,12 @@
             "description": "Custom headers to add to the request",
             "title": "Custom Headers",
             "type": "object"
+          },
+          "include_requests_detail": {
+            "default": false,
+            "description": "If true, store the detailed list of requests made by the page",
+            "title": "Include Requests Detail",
+            "type": "boolean"
           },
           "web_page": {
             "allOf": [
@@ -255,6 +481,22 @@
           "web_page"
         ],
         "title": "Body_Add_new_ecoindex_analysis_task_to_the_waiting_queue_v1_tasks_ecoindexes__post",
+        "type": "object"
+      },
+      "DomainMetrics": {
+        "properties": {
+          "total_count": {
+            "default": 0,
+            "title": "Total Count",
+            "type": "integer"
+          },
+          "total_size": {
+            "default": 0,
+            "title": "Total Size",
+            "type": "number"
+          }
+        },
+        "title": "DomainMetrics",
         "type": "object"
       },
       "Ecoindex": {
@@ -326,45 +568,6 @@
           }
         },
         "title": "Ecoindex",
-        "type": "object"
-      },
-      "EcoindexSearchResults": {
-        "properties": {
-          "count": {
-            "title": "Count",
-            "type": "integer"
-          },
-          "host_results": {
-            "default": [],
-            "items": {
-              "$ref": "#/components/schemas/ApiEcoindex"
-            },
-            "title": "Host Results",
-            "type": "array"
-          },
-          "latest_result": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ApiEcoindex"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "older_results": {
-            "default": [],
-            "items": {
-              "$ref": "#/components/schemas/ApiEcoindex"
-            },
-            "title": "Older Results",
-            "type": "array"
-          }
-        },
-        "required": [
-          "count"
-        ],
-        "title": "EcoindexSearchResults",
         "type": "object"
       },
       "Grade": {
@@ -481,6 +684,116 @@
           "total_count"
         ],
         "title": "Host",
+        "type": "object"
+      },
+      "MimetypeAggregation": {
+        "properties": {
+          "audio": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "css": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "font": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "html": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "image": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "javascript": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "other": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          },
+          "video": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MimetypeMetrics"
+              }
+            ],
+            "default": {
+              "total_count": 0,
+              "total_size": 0.0
+            }
+          }
+        },
+        "title": "MimetypeAggregation",
+        "type": "object"
+      },
+      "MimetypeMetrics": {
+        "properties": {
+          "total_count": {
+            "default": 0,
+            "title": "Total Count",
+            "type": "integer"
+          },
+          "total_size": {
+            "default": 0,
+            "title": "Total Size",
+            "type": "number"
+          }
+        },
+        "title": "MimetypeMetrics",
         "type": "object"
       },
       "PageApiEcoindexes": {
@@ -716,6 +1029,74 @@
           }
         },
         "title": "QueueTaskResult",
+        "type": "object"
+      },
+      "RequestDetail": {
+        "properties": {
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "size": {
+            "title": "Size",
+            "type": "number"
+          },
+          "status": {
+            "title": "Status",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "category",
+          "domain",
+          "status",
+          "url",
+          "size"
+        ],
+        "title": "RequestDetail",
+        "type": "object"
+      },
+      "RequestsDetailResponse": {
+        "properties": {
+          "by_category": {
+            "$ref": "#/components/schemas/MimetypeAggregation"
+          },
+          "by_domain": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/DomainMetrics"
+            },
+            "title": "By Domain",
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RequestDetail"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "title": "RequestsDetailResponse",
         "type": "object"
       },
       "Result": {
@@ -969,7 +1350,7 @@
   "info": {
     "description": "Ecoindex API enables you to perform ecoindex analysis of given web pages",
     "title": "Ecoindex API",
-    "version": "3.12.0"
+    "version": "3.15.0"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -1193,7 +1574,7 @@
               "example": [],
               "schema": {
                 "items": {
-                  "$ref": "#/components/schemas/ApiEcoindex"
+                  "$ref": "#/components/schemas/ApiEcoindexBatchItem"
                 },
                 "maxItems": 100,
                 "minItems": 1,
@@ -1577,253 +1958,6 @@
         ]
       }
     },
-    "/{version}/ecoindexes/latest": {
-      "get": {
-        "description": "This returns the latest results for a given url. This feature is used by the Ecoindex\nbrowser extension. By default, the results are cached for 7 days.\n\nIf the url is not found in the database, the response status code will be 404.",
-        "operationId": "Get_latest_results__version__ecoindexes_latest_get",
-        "parameters": [
-          {
-            "description": "Engine version used to run the analysis (v0 or v1)",
-            "example": "v1",
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Version"
-                }
-              ],
-              "description": "Engine version used to run the analysis (v0 or v1)",
-              "title": "Engine version"
-            }
-          },
-          {
-            "description": "Url to be searched in database",
-            "in": "query",
-            "name": "url",
-            "required": true,
-            "schema": {
-              "description": "Url to be searched in database",
-              "format": "uri",
-              "minLength": 1,
-              "title": "Url",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Force the refresh of the cache",
-            "in": "query",
-            "name": "refresh",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "Force the refresh of the cache",
-              "title": "Refresh",
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EcoindexSearchResults"
-                }
-              }
-            },
-            "description": "Get latest results for a given url"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Latest Results",
-        "tags": [
-          "BFF"
-        ]
-      }
-    },
-    "/{version}/ecoindexes/latest/badge": {
-      "get": {
-        "description": "This returns the SVG badge of the given url. This feature is used by the Ecoindex\nbadge. By default, the results are cached for 7 days.\n\nIf the url is not found in the database, it will return a badge with the grade `?`.",
-        "operationId": "Get_badge__version__ecoindexes_latest_badge_get",
-        "parameters": [
-          {
-            "description": "Engine version used to run the analysis (v0 or v1)",
-            "example": "v1",
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Version"
-                }
-              ],
-              "description": "Engine version used to run the analysis (v0 or v1)",
-              "title": "Engine version"
-            }
-          },
-          {
-            "description": "Theme of the badge",
-            "in": "query",
-            "name": "theme",
-            "required": false,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/BadgeTheme"
-                }
-              ],
-              "default": "light",
-              "description": "Theme of the badge",
-              "title": "Theme"
-            }
-          },
-          {
-            "description": "Url to be searched in database",
-            "in": "query",
-            "name": "url",
-            "required": true,
-            "schema": {
-              "description": "Url to be searched in database",
-              "format": "uri",
-              "minLength": 1,
-              "title": "Url",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Force the refresh of the cache",
-            "in": "query",
-            "name": "refresh",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "Force the refresh of the cache",
-              "title": "Refresh",
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Badge of the given url from [CDN V1](https://www.jsdelivr.com/package/gh/cnumr/ecoindex_badge)"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": "Screenshot v1/550cdf8c-9c4c-4f8a-819d-cb69d0866fe1.webp does not exist."
-                }
-              }
-            },
-            "description": "Not found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Badge",
-        "tags": [
-          "BFF"
-        ]
-      }
-    },
-    "/{version}/ecoindexes/latest/redirect": {
-      "get": {
-        "description": "This redirects to the latest results on the frontend website for the given url.\nThis feature is used by the Ecoindex browser extension and badge.\n\nIf the url is not found in the database, the response status code will be 404.",
-        "operationId": "Get_latest_results_redirect__version__ecoindexes_latest_redirect_get",
-        "parameters": [
-          {
-            "description": "Engine version used to run the analysis (v0 or v1)",
-            "example": "v1",
-            "in": "path",
-            "name": "version",
-            "required": true,
-            "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Version"
-                }
-              ],
-              "description": "Engine version used to run the analysis (v0 or v1)",
-              "title": "Engine version"
-            }
-          },
-          {
-            "description": "Url to be searched in database",
-            "in": "query",
-            "name": "url",
-            "required": true,
-            "schema": {
-              "description": "Url to be searched in database",
-              "format": "uri",
-              "minLength": 1,
-              "title": "Url",
-              "type": "string"
-            }
-          },
-          {
-            "description": "Force the refresh of the cache",
-            "in": "query",
-            "name": "refresh",
-            "required": false,
-            "schema": {
-              "default": false,
-              "description": "Force the refresh of the cache",
-              "title": "Refresh",
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Redirect to the latest results for a given url"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Latest Results Redirect",
-        "tags": [
-          "BFF"
-        ]
-      }
-    },
     "/{version}/ecoindexes/{id}": {
       "get": {
         "description": "This returns an ecoindex given by its unique identifier",
@@ -1891,6 +2025,86 @@
           }
         },
         "summary": "Get Ecoindex Analysis By Id",
+        "tags": [
+          "Ecoindex"
+        ]
+      }
+    },
+    "/{version}/ecoindexes/{id}/requests": {
+      "get": {
+        "description": "This returns the detailed list of requests made by the page, aggregated by category and by domain. Returns `null` when the analysis exists but request details were not collected.",
+        "operationId": "Get_ecoindex_analysis_requests_by_id__version__ecoindexes__id__requests_get",
+        "parameters": [
+          {
+            "description": "Unique identifier of the ecoindex analysis",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "description": "Unique identifier of the ecoindex analysis",
+              "format": "uuid",
+              "title": "Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Engine version used to run the analysis (v0 or v1)",
+            "example": "v1",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Version"
+                }
+              ],
+              "description": "Engine version used to run the analysis (v0 or v1)",
+              "title": "Engine version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/RequestsDetailResponse"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Ecoindex Analysis Requests By Id  Version  Ecoindexes  Id  Requests Get"
+                }
+              }
+            },
+            "description": "Request details of the ecoindex analysis"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Analysis e9a4d5ea-b9c5-4440-a74a-cac229f7d672 not found for version v1"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Ecoindex Analysis Requests By Id",
         "tags": [
           "Ecoindex"
         ]

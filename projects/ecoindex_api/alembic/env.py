@@ -3,6 +3,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from ecoindex.config import Settings
+from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest  # noqa: F401
 from ecoindex.models.api import *  # noqa: F403
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection

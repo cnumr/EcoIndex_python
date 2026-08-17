@@ -10,7 +10,13 @@ from ua_generator import generate as ua_generate
 from ecoindex.compute import compute_ecoindex
 from ecoindex.exceptions.scraper import EcoindexScraperStatusException
 from ecoindex.models.compute import PageMetrics, Result, ScreenShot, WindowSize
-from ecoindex.models.scraper import MimetypeAggregation, RequestItem, Requests
+from ecoindex.models.scraper import (
+    DomainMetrics,
+    MimetypeAggregation,
+    RequestItem,
+    Requests,
+    get_domain_from_url,
+)
 from ecoindex.utils.screenshots import convert_screenshot_to_webp, set_screenshot_rights
 from playwright._impl._api_structures import SetCookieParam, ViewportSize
 from playwright.async_api import async_playwright
@@ -83,6 +89,9 @@ class EcoindexScraper:
     async def get_requests_by_category(self) -> MimetypeAggregation:
         return self.all_requests.aggregation
 
+    async def get_requests_by_domain(self) -> dict[str, DomainMetrics]:
+        return self.all_requests.domain_aggregation
+
     async def scrap_page(self) -> PageMetrics:
         async with async_playwright() as p:
             browser = await p.chromium.launch(
@@ -148,19 +157,26 @@ class EcoindexScraper:
         with open(self.har_temp_file_path, "r") as f:
             trace = json.load(f)
             aggregation = self.all_requests.aggregation.model_dump()
+            domain_aggregation = self.all_requests.domain_aggregation.copy()
 
             for entry in trace["log"]["entries"]:
                 url = entry["request"]["url"]
+                domain = get_domain_from_url(url)
                 mime_type = entry["response"]["content"]["mimeType"]
                 category = await MimetypeAggregation.get_category_of_resource(mime_type)
                 aggregation[category]["total_count"] += 1
                 size = self.get_request_size(entry)
                 aggregation[category]["total_size"] += size
+                if domain not in domain_aggregation:
+                    domain_aggregation[domain] = DomainMetrics()
+                domain_aggregation[domain].total_count += 1
+                domain_aggregation[domain].total_size += size
                 self.all_requests.total_count += 1
                 self.all_requests.total_size += size
                 self.all_requests.items.append(
                     RequestItem(
                         url=url,
+                        domain=domain,
                         mime_type=mime_type,
                         status=entry["response"]["status"],
                         size=size,
@@ -168,6 +184,7 @@ class EcoindexScraper:
                     )
                 )
             self.all_requests.aggregation = MimetypeAggregation(**aggregation)
+            self.all_requests.domain_aggregation = domain_aggregation
         os.remove(self.har_temp_file_path)
 
     async def get_nodes_count(self) -> int:

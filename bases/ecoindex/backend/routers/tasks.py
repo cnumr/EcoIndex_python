@@ -8,7 +8,7 @@ from ecoindex.backend.models.dependencies_parameters.id import IdParameter
 from ecoindex.backend.utils import check_quota
 from ecoindex.config.settings import Settings
 from ecoindex.database.engine import get_session
-from ecoindex.database.models import ApiEcoindexes
+from ecoindex.database.models import ApiEcoindexBatchItems
 from ecoindex.models import WebPage
 from ecoindex.models.enums import TaskStatus
 from ecoindex.models.response_examples import (
@@ -89,6 +89,15 @@ async def add_ecoindex_analysis_task(
             example={"X-My-Custom-Header": "MyValue"},
         ),
     ] = {},
+    include_requests_detail: Annotated[
+        bool,
+        Body(
+            description=(
+                "If true, store the detailed list of requests made by the page"
+            ),
+            example=False,
+        ),
+    ] = False,
     session: AsyncSession = Depends(get_session),
 ) -> str:
     if Settings().DAILY_LIMIT_PER_HOST:
@@ -141,6 +150,7 @@ async def add_ecoindex_analysis_task(
         width=web_page.width,
         height=web_page.height,
         custom_headers=headers,
+        include_requests_detail=include_requests_detail,
         **_enqueue_settings(),
     )
 
@@ -227,7 +237,7 @@ async def delete_ecoindex_analysis_task_by_id(
 )
 async def add_ecoindex_analysis_task_batch(
     results: Annotated[
-        ApiEcoindexes,
+        ApiEcoindexBatchItems,
         Body(
             default=...,
             title="List of ecoindex analysis results to save",
