@@ -132,12 +132,19 @@ async def get_ecoindex_analysis_by_id(
 @router.get(
     name="Get ecoindex analysis requests by id",
     path="/{id}/requests",
-    response_model=RequestsDetailResponse | None,
+    response_model=RequestsDetailResponse,
     response_description="Request details of the ecoindex analysis",
-    responses={status.HTTP_404_NOT_FOUND: example_ecoindex_not_found},
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": (
+                "Analysis exists but request details were not collected"
+            )
+        },
+        status.HTTP_404_NOT_FOUND: example_ecoindex_not_found,
+    },
     description=(
         "This returns the detailed list of requests made by the page, "
-        "aggregated by category and by domain. Returns `null` when the "
+        "aggregated by category and by domain. Returns 204 when the "
         "analysis exists but request details were not collected."
     ),
 )
@@ -145,7 +152,7 @@ async def get_ecoindex_analysis_requests_by_id(
     id: IdParameter,
     version: VersionParameter = Version.v1,
     session: AsyncSession = Depends(get_session),
-) -> RequestsDetailResponse | None:
+) -> RequestsDetailResponse | Response:
     ecoindex = await get_ecoindex_result_by_id_db(
         session=session, id=id, version=version
     )
@@ -160,7 +167,7 @@ async def get_ecoindex_analysis_requests_by_id(
         session=session, analysis_id=id
     )
     if not request_rows:
-        return None
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     return aggregate_request_details(
         [

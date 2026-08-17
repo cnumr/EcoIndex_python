@@ -2032,7 +2032,7 @@
     },
     "/{version}/ecoindexes/{id}/requests": {
       "get": {
-        "description": "This returns the detailed list of requests made by the page, aggregated by category and by domain. Returns `null` when the analysis exists but request details were not collected.",
+        "description": "This returns the detailed list of requests made by the page, aggregated by category and by domain. Returns 204 when the analysis exists but request details were not collected.",
         "operationId": "Get_ecoindex_analysis_requests_by_id__version__ecoindexes__id__requests_get",
         "parameters": [
           {
@@ -2069,19 +2069,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/RequestsDetailResponse"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ],
-                  "title": "Response Get Ecoindex Analysis Requests By Id  Version  Ecoindexes  Id  Requests Get"
+                  "$ref": "#/components/schemas/RequestsDetailResponse"
                 }
               }
             },
             "description": "Request details of the ecoindex analysis"
+          },
+          "204": {
+            "description": "Analysis exists but request details were not collected"
           },
           "404": {
             "content": {
