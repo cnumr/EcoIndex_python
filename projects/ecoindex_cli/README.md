@@ -342,7 +342,7 @@ width,height,url,size,nodes,requests,grade,score,ges,water,date,page_type
 
 ### Requirements
 
-- Python 3.10+
+- Python ^3.10 with [pip](https://pip.pypa.io/en/stable/installation/)
 - [uv](https://docs.astral.sh/uv/getting-started/installation/)
 - [Task](https://taskfile.dev/#/installation)
 
@@ -352,7 +352,7 @@ At first, you need to install dependencies from the repository root:
 
 ```bash
 uv sync --all-groups
-uv run playwright install chromium --with-deps
+uv run camoufox fetch
 ```
 
 ### Usage

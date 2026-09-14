@@ -25,8 +25,7 @@ update-values = "ecoindex.scripts:update_values"
 
 [dependency-groups]
 scraper = [
-    "playwright>=1.39.0",
-    "playwright-stealth>=1.0.6",
+    "camoufox>=0.5.5",
 ]
 scraper-webp = [
     "pillow>=12.2.0",

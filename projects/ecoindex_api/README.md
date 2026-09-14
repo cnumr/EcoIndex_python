@@ -52,7 +52,7 @@ cp .env.template .env && \
 task api:docker-up-postgres -- -d
 ```
 
-Every services should start normaly, then you can go to:
+Every services should start normally, then you can go to:
 
 - [http://localhost:8001/docs](http://localhost:8001/docs) to access to the swagger of the API
 
@@ -142,7 +142,7 @@ From the repository root:
 
 ```bash
 task uv:install          # Install Python 3.12 and all dependencies
-task api:init-dev-project # Initialize API dev environment (Playwright, .env, migrations)
+task api:init-dev-project # Initialize API dev environment (Camoufox, .env, migrations)
 ```
 
 ### Run the API locally

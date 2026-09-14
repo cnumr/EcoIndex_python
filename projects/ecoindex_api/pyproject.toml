@@ -13,8 +13,7 @@ dependencies = [
     "rq>=2.1.0",
     "cryptography>=48.0.1",
     "fastapi>=0.109.1",
-    "playwright>=1.39.0",
-    "playwright-stealth>=1.0.6",
+    "camoufox>=0.5.5",
     "pydantic[email]>=2.1.1,<=2.4.2",
     "pydantic-settings>=2.0.3",
     "pyyaml>=6.0.1",
@@ -42,8 +41,7 @@ backend = [
 ]
 worker = [
     "pillow>=12.2.0",
-    "playwright>=1.39.0",
-    "playwright-stealth>=1.0.6",
+    "camoufox>=0.5.5",
 ]
 dev = [
     "aiomysql>=0.2.0",

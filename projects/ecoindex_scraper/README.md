@@ -10,11 +10,13 @@ This module provides a simple interface to get the [Ecoindex](http://www.ecoinde
 ## Requirements
 
 - Python ^3.10 with [pip](https://pip.pypa.io/en/stable/installation/)
+- [Camoufox](https://camoufox.com/python/installation/) for the browser binary
 
 ## Install
 
 ```shell
 pip install ecoindex_scraper
+python -m camoufox fetch
 ```
 
 If you need to convert the screenshot to webp with the `generate_screenshot` method, you need to install the Pillow dependency.
