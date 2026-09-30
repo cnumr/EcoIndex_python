@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 from time import sleep
 from uuid import uuid4
 from typing import Any, cast
@@ -10,6 +11,12 @@ from ua_generator import generate as ua_generate
 
 from camoufox.async_api import AsyncCamoufox
 
+from ecoindex.best_practices import (
+    BestPracticesContext,
+    BestPracticesEngine,
+    BestPracticesReport,
+    DomMetrics,
+)
 from ecoindex.compute import compute_ecoindex
 from ecoindex.exceptions.scraper import EcoindexScraperStatusException
 from ecoindex.models.compute import PageMetrics, Result, ScreenShot, WindowSize
@@ -22,6 +29,24 @@ from ecoindex.models.scraper import (
 )
 from ecoindex.utils.screenshots import convert_screenshot_to_webp, set_screenshot_rights
 from typing_extensions import deprecated
+
+DOM_METRICS_SCRIPT = """
+() => {
+  const scripts = Array.from(document.scripts);
+  const inlineJs = scripts.filter((s) => !s.src).length;
+  const styles = Array.from(document.querySelectorAll("style")).filter(
+    (el) => !(el instanceof SVGStyleElement)
+  );
+  const printStyles =
+    document.querySelectorAll("link[rel=stylesheet][media~=print]").length +
+    document.querySelectorAll("style[media~=print]").length;
+  return {
+    inline_js: inlineJs,
+    inline_css: styles.length,
+    print_stylesheet: printStyles,
+  };
+}
+"""
 
 
 class EcoindexScraper:
@@ -40,6 +65,7 @@ class EcoindexScraper:
         cookies: list[dict[str, object]] = [],
         custom_headers: dict[str, str] = {},
         logger=None,
+        best_practices: bool | Path = False,
     ):
         self.url = url
         self.window_size = window_size
@@ -59,6 +85,12 @@ class EcoindexScraper:
         self.cookies = cookies
         self.custom_headers = custom_headers
         self.logger = logger
+        self.best_practices_enabled = best_practices is not False
+        self.best_practices_config_path: Path | None = (
+            best_practices if isinstance(best_practices, Path) else None
+        )
+        self.dom_metrics = DomMetrics()
+        self._best_practices_report: BestPracticesReport | None = None
 
     @staticmethod
     def get_user_agent() -> UserAgent:
@@ -93,6 +125,20 @@ class EcoindexScraper:
     async def get_requests_by_domain(self) -> dict[str, DomainMetrics]:
         return self.all_requests.domain_aggregation
 
+    async def get_best_practices(self) -> BestPracticesReport:
+        if not self.best_practices_enabled:
+            raise RuntimeError(
+                "Best practices analysis is disabled. "
+                "Initialize EcoindexScraper with best_practices=True "
+                "or a Path to a YAML config."
+            )
+        if self._best_practices_report is None:
+            raise RuntimeError(
+                "Best practices report is not available yet. "
+                "Call get_page_analysis() or scrap_page() first."
+            )
+        return self._best_practices_report
+
     async def scrap_page(self) -> PageMetrics:
         async with AsyncCamoufox(
             headless=self.headless,
@@ -123,17 +169,33 @@ class EcoindexScraper:
             )
             sleep(self.wait_after_scroll)
             total_nodes = await self.get_nodes_count()
+            if self.best_practices_enabled:
+                self.dom_metrics = await self.get_dom_metrics()
             await self.page.close()
             await self.context.close()
             await browser.close()
 
         await self.get_requests_from_har_file()
+        if self.best_practices_enabled:
+            self._best_practices_report = self._run_best_practices()
 
         return PageMetrics(
             size=self.all_requests.total_size / 1000,
             nodes=total_nodes,
             requests=self.all_requests.total_count,
         )
+
+    def _run_best_practices(self) -> BestPracticesReport:
+        engine = BestPracticesEngine(self.best_practices_config_path)
+        context = BestPracticesContext(
+            requests=self.all_requests,
+            dom=self.dom_metrics,
+        )
+        return engine.run(context)
+
+    async def get_dom_metrics(self) -> DomMetrics:
+        raw = await self.page.evaluate(DOM_METRICS_SCRIPT)
+        return DomMetrics.model_validate(raw)
 
     async def generate_screenshot(self) -> None:
         if self.screenshot and self.screenshot.folder and self.screenshot.id:
