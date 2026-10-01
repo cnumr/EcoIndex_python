@@ -40,8 +40,12 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["ecoindex"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"../../components/ecoindex/best_practices/default_rules.yaml" = "ecoindex/best_practices/default_rules.yaml"
+
 [tool.polylith.bricks]
 "../../bases/ecoindex/cli" = "ecoindex/cli"
+"../../components/ecoindex/best_practices" = "ecoindex/best_practices"
 "../../components/ecoindex/compute" = "ecoindex/compute"
 "../../components/ecoindex/config" = "ecoindex/config"
 "../../components/ecoindex/data" = "ecoindex/data"
