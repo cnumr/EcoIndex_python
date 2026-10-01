@@ -1,0 +1,64 @@
+version: 1
+rules:
+  - id: http_requests
+    enabled: true
+    checker: http_requests
+    category: network
+    rweb_id: RWEB_0047
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0047-limit-the-number-of-http-requests
+    title: "Limit the number of HTTP requests"
+    description: >
+      Page load time correlates with the number of files the browser must
+      download and their individual size. Reducing HTTP requests per page
+      lowers the number of servers needed and the associated environmental
+      impacts.
+    thresholds:
+      # Soft warn inspired by GreenIT-Analysis intermediate target; fail = RWEB maxValue
+      warn: 26
+      fail: 40
+
+  - id: domains_number
+    enabled: true
+    checker: domains_number
+    category: network
+    rweb_id: RWEB_0082
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0082-limit-the-number-of-domains-serving-resources
+    title: "Limit the number of domains serving resources"
+    description: >
+      When page components are hosted on several domains, the browser must
+      open an HTTP connection to each of them. Resources should be grouped
+      on as few domains as possible (a separate cookie-less domain for
+      static assets remaining an accepted exception).
+    thresholds:
+      warn: 3
+      fail: 5
+
+  - id: externalize_css_js
+    enabled: true
+    checker: externalize_css_js
+    category: network
+    rweb_id: RWEB_0042
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0042-externalize-css-and-javascript
+    title: "Externalize CSS and Javascript"
+    description: >
+      CSS and JavaScript should not be inlined in the HTML of the page
+      (except small configuration variables). External files can be cached
+      by the browser and avoid re-downloading the same code on every page.
+    thresholds:
+      warn: 1
+      fail: 2
+
+  - id: print_stylesheet
+    enabled: true
+    checker: print_stylesheet
+    category: user-device
+    rweb_id: RWEB_0031
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0031-provide-a-css-print
+    title: "Provide a CSS print"
+    description: >
+      A print stylesheet reduces unnecessary ink and paper by hiding chrome
+      (header, footer, menu, sidebars) and non-content images when printing.
+    # Presence check (GreenIT-Analysis style): at least one print stylesheet required
+    higher_is_worse: false
+    thresholds:
+      fail: 1
