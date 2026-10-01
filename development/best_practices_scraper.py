@@ -16,7 +16,7 @@ _ROOT = Path(__file__).resolve().parents[1]
 for _path in (_ROOT / "components", _ROOT / "bases", _ROOT / "development"):
     sys.path.insert(0, str(_path))
 
-from ecoindex.scraper import EcoindexScraper
+from ecoindex.scraper import EcoindexScraper  # noqa: E402
 
 URL = "https://www.ecoindex.fr"
 # Optional custom rules file; leave as None to use the default RWEB rules
