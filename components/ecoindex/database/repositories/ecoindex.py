@@ -3,7 +3,14 @@ from typing import cast
 from uuid import UUID
 
 from ecoindex.database.helper import date_filter
-from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest
+from ecoindex.database.models import (
+    ApiEcoindex,
+    ApiEcoindexBestPractice,
+    ApiEcoindexBestPracticeResult,
+    ApiEcoindexRequest,
+    BestPracticeResultItem,
+    BestPracticesAnalysisResponse,
+)
 from ecoindex.models import Result
 from ecoindex.models.enums import Version
 from ecoindex.models.sort import Sort
@@ -109,6 +116,58 @@ async def get_requests_by_analysis_id_db(
     result = await session.exec(statement)
 
     return list(result.all())
+
+
+async def get_best_practice_results_by_analysis_id_db(
+    session: AsyncSession, analysis_id: UUID
+) -> BestPracticesAnalysisResponse | None:
+    statement = (
+        select(ApiEcoindexBestPracticeResult, ApiEcoindexBestPractice)
+        .join(
+            ApiEcoindexBestPractice,
+            ApiEcoindexBestPractice.id
+            == ApiEcoindexBestPracticeResult.best_practice_id,
+        )
+        .where(ApiEcoindexBestPracticeResult.analysis_id == analysis_id)
+    )
+    result = await session.exec(statement)
+    rows = list(result.all())
+    if not rows:
+        return None
+
+    items: list[BestPracticeResultItem] = []
+    ok_count = warn_count = fail_count = 0
+    for result_row, practice in rows:
+        items.append(
+            BestPracticeResultItem(
+                id=result_row.id,
+                rule_id=practice.rule_id,
+                rweb_id=practice.rweb_id,
+                category=practice.category,
+                title=practice.title,
+                description=practice.description,
+                url=practice.url,
+                status=result_row.status,
+                value=result_row.value,
+                threshold_warn=result_row.threshold_warn,
+                threshold_fail=result_row.threshold_fail,
+                message=result_row.message,
+                details=list(result_row.details or []),
+            )
+        )
+        if result_row.status == "ok":
+            ok_count += 1
+        elif result_row.status == "warn":
+            warn_count += 1
+        elif result_row.status == "fail":
+            fail_count += 1
+
+    return BestPracticesAnalysisResponse(
+        results=items,
+        ok_count=ok_count,
+        warn_count=warn_count,
+        fail_count=fail_count,
+    )
 
 
 async def get_count_daily_request_per_host(session: AsyncSession, host: str) -> int:

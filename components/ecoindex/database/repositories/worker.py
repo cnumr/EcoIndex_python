@@ -1,6 +1,11 @@
 from uuid import UUID
 
+from ecoindex.best_practices import BestPracticesReport
 from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest
+from ecoindex.database.repositories.best_practices import (
+    build_best_practice_result_rows,
+    sync_best_practices_catalog,
+)
 from ecoindex.database.repositories.ecoindex import (
     get_count_analysis_db,
     get_rank_analysis_db,
@@ -18,6 +23,7 @@ async def save_ecoindex_result_db(
     version: Version = Version.v1,
     source: str | None = None,
     requests: list[RequestDetail] | None = None,
+    best_practices: BestPracticesReport | None = None,
 ) -> ApiEcoindex:
     ranking = await get_rank_analysis_db(
         session=session, ecoindex=ecoindex_result, version=version
@@ -60,6 +66,15 @@ async def save_ecoindex_result_db(
                 )
                 for item in requests
             ]
+        )
+    if best_practices is not None and best_practices.results:
+        catalog = await sync_best_practices_catalog(session=session)
+        session.add_all(
+            build_best_practice_result_rows(
+                analysis_id=id,
+                report=best_practices,
+                catalog=catalog,
+            )
         )
     try:
         await session.commit()
