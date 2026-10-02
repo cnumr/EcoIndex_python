@@ -44,6 +44,7 @@ def ecoindex_task(
     height: int,
     custom_headers: dict[str, str],
     include_requests_detail: bool = False,
+    include_best_practices: bool = False,
 ) -> str:
     queue_task_result = run(
         async_ecoindex_task(
@@ -53,6 +54,7 @@ def ecoindex_task(
             height=height,
             custom_headers=custom_headers,
             include_requests_detail=include_requests_detail,
+            include_best_practices=include_best_practices,
         )
     )
 
@@ -66,6 +68,7 @@ async def async_ecoindex_task(
     height: int,
     custom_headers: dict[str, str],
     include_requests_detail: bool = False,
+    include_best_practices: bool = False,
 ) -> QueueTaskResult:
     try:
         settings = Settings()
@@ -91,6 +94,7 @@ async def async_ecoindex_task(
             screenshot_gid=settings.SCREENSHOTS_GID,
             screenshot_uid=settings.SCREENSHOTS_UID,
             custom_headers=custom_headers,
+            best_practices=include_best_practices,
         )
         ecoindex = await scraper.get_page_analysis()
         request_details = (
@@ -101,6 +105,9 @@ async def async_ecoindex_task(
             if include_requests_detail
             else None
         )
+        best_practices_report = (
+            await scraper.get_best_practices() if include_best_practices else None
+        )
 
         if screenshot:
             persist_screenshot(screenshot=screenshot, version=Version.v1.value)
@@ -110,6 +117,7 @@ async def async_ecoindex_task(
             id=task_id,
             ecoindex_result=ecoindex,
             requests=request_details,
+            best_practices=best_practices_report,
         )
 
         return QueueTaskResult(status=TaskStatus.SUCCESS, detail=db_result)

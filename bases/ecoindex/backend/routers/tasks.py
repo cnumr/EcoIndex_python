@@ -98,6 +98,15 @@ async def add_ecoindex_analysis_task(
             example=False,
         ),
     ] = False,
+    include_best_practices: Annotated[
+        bool,
+        Body(
+            description=(
+                "If true, evaluate and store RWEB best practices for the page"
+            ),
+            example=False,
+        ),
+    ] = False,
     session: AsyncSession = Depends(get_session),
 ) -> str:
     if Settings().DAILY_LIMIT_PER_HOST:
@@ -151,6 +160,7 @@ async def add_ecoindex_analysis_task(
         height=web_page.height,
         custom_headers=headers,
         include_requests_detail=include_requests_detail,
+        include_best_practices=include_best_practices,
         **_enqueue_settings(),
     )
 

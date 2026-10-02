@@ -12,9 +12,11 @@ from ecoindex.backend.utils import get_sort_parameters, get_status_code
 from ecoindex.database.engine import get_session
 from ecoindex.database.models import (
     ApiEcoindex,
+    BestPracticesAnalysisResponse,
     PageApiEcoindexes,
 )
 from ecoindex.database.repositories.ecoindex import (
+    get_best_practice_results_by_analysis_id_db,
     get_count_analysis_db,
     get_ecoindex_result_by_id_db,
     get_ecoindex_result_list_db,
@@ -182,6 +184,48 @@ async def get_ecoindex_analysis_requests_by_id(
             for row in request_rows
         ]
     )
+
+
+@router.get(
+    name="Get ecoindex analysis best practices by id",
+    path="/{id}/best-practices",
+    response_model=BestPracticesAnalysisResponse,
+    response_description="Best practices results of the ecoindex analysis",
+    responses={
+        status.HTTP_204_NO_CONTENT: {
+            "description": (
+                "Analysis exists but best practices were not collected"
+            )
+        },
+        status.HTTP_404_NOT_FOUND: example_ecoindex_not_found,
+    },
+    description=(
+        "This returns the RWEB best practices evaluation for the analysis. "
+        "Returns 204 when the analysis exists but best practices were not collected."
+    ),
+)
+async def get_ecoindex_analysis_best_practices_by_id(
+    id: IdParameter,
+    version: VersionParameter = Version.v1,
+    session: AsyncSession = Depends(get_session),
+) -> BestPracticesAnalysisResponse | Response:
+    ecoindex = await get_ecoindex_result_by_id_db(
+        session=session, id=id, version=version
+    )
+
+    if not ecoindex:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Analysis {id} not found for version {version.value}",
+        )
+
+    report = await get_best_practice_results_by_analysis_id_db(
+        session=session, analysis_id=id
+    )
+    if report is None:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    return report
 
 
 @router.get(

@@ -20,6 +20,9 @@ class FakeResult:
     def one(self) -> int:
         return self.value
 
+    def all(self) -> list:
+        return []
+
 
 class FakeListResult:
     def __init__(self, value: list):
@@ -62,6 +65,9 @@ class FakeSession:
 
     async def close(self) -> None:
         self.closed = True
+
+    async def flush(self) -> None:
+        return None
 
 
 @pytest.mark.asyncio
@@ -183,3 +189,94 @@ async def test_save_ecoindex_result_db_persists_stripped_request_urls(monkeypatc
     assert request_rows[0].url == "https://cdn.example.com/app.js"
     assert request_rows[0].domain == "cdn.example.com"
     assert request_rows[0].category == "javascript"
+
+
+@pytest.mark.asyncio
+async def test_save_ecoindex_result_db_persists_best_practices(monkeypatch):
+    from ecoindex.best_practices.models import (
+        BestPracticesReport,
+        RuleCategory,
+        RuleResult,
+        RuleStatus,
+        Thresholds,
+    )
+    from ecoindex.database.models import (
+        ApiEcoindexBestPractice,
+        ApiEcoindexBestPracticeResult,
+    )
+
+    analysis_id = uuid4()
+    session = FakeSession()
+
+    async def fake_rank(*_args, **_kwargs):
+        return 1
+
+    async def fake_count(*_args, **_kwargs):
+        return 1
+
+    async def fake_flush() -> None:
+        for item in session.added:
+            if isinstance(item, ApiEcoindexBestPractice) and getattr(item, "id", None):
+                continue
+            if isinstance(item, ApiEcoindexBestPractice):
+                item.id = uuid4()
+
+    monkeypatch.setattr(
+        "ecoindex.database.repositories.worker.get_rank_analysis_db",
+        fake_rank,
+    )
+    monkeypatch.setattr(
+        "ecoindex.database.repositories.worker.get_count_analysis_db",
+        fake_count,
+    )
+    session.flush = fake_flush  # type: ignore[method-assign]
+
+    report = BestPracticesReport(
+        results=[
+            RuleResult(
+                id="http_requests",
+                category=RuleCategory.network,
+                title="Limit the number of HTTP requests",
+                rweb_id="RWEB_0047",
+                status=RuleStatus.ok,
+                value=5,
+                thresholds=Thresholds(warn=26, fail=40),
+                message="5 HTTP request(s)",
+                details=[],
+            )
+        ]
+    )
+
+    await save_ecoindex_result_db(
+        session=session,
+        id=analysis_id,
+        ecoindex_result=Result(
+            size=119,
+            nodes=45,
+            requests=2,
+            url="https://www.ecoindex.fr",
+            width=1920,
+            height=1080,
+            grade="A",
+            score=89,
+            ges=1.22,
+            water=1.89,
+        ),
+        best_practices=report,
+    )
+
+    practices = [
+        item for item in session.added if isinstance(item, ApiEcoindexBestPractice)
+    ]
+    results = [
+        item
+        for item in session.added
+        if isinstance(item, ApiEcoindexBestPracticeResult)
+    ]
+    assert len(practices) >= 1
+    assert any(p.rule_id == "http_requests" for p in practices)
+    assert len(results) == 1
+    assert results[0].analysis_id == analysis_id
+    assert results[0].status == "ok"
+    assert results[0].value == 5
+    assert results[0].threshold_fail == 40

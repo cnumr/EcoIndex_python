@@ -1,7 +1,12 @@
 from typing import AsyncGenerator
 
 from ecoindex.config import Settings
-from ecoindex.database.models import ApiEcoindex, ApiEcoindexRequest  # noqa: F401
+from ecoindex.database.models import (  # noqa: F401
+    ApiEcoindex,
+    ApiEcoindexBestPractice,
+    ApiEcoindexBestPracticeResult,
+    ApiEcoindexRequest,
+)
 from ecoindex.models.api import *  # noqa: F401, F403
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
