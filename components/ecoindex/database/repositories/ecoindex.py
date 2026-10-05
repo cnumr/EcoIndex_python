@@ -123,11 +123,7 @@ async def get_best_practice_results_by_analysis_id_db(
 ) -> BestPracticesAnalysisResponse | None:
     statement = (
         select(ApiEcoindexBestPracticeResult, ApiEcoindexBestPractice)
-        .join(
-            ApiEcoindexBestPractice,
-            ApiEcoindexBestPractice.id
-            == ApiEcoindexBestPracticeResult.best_practice_id,
-        )
+        .join(ApiEcoindexBestPractice)
         .where(ApiEcoindexBestPracticeResult.analysis_id == analysis_id)
     )
     result = await session.exec(statement)
