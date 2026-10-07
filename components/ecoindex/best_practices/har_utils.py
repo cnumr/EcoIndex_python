@@ -150,7 +150,8 @@ def is_http_redirect(status: int) -> bool:
 
 def official_social_network(url: str) -> str | None:
     lower = url.lower()
-    if "connect.facebook.net" in lower and "sdk.js" in lower:
+    host = (urlparse(url).hostname or "").lower()
+    if host == "connect.facebook.net" and "sdk.js" in lower:
         return "facebook"
     for pattern, name in _SOCIAL_PATTERNS:
         if pattern in lower:
