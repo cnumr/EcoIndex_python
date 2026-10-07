@@ -233,6 +233,19 @@ class EcoindexScraper:
                 domain_aggregation[domain].total_size += size
                 self.all_requests.total_count += 1
                 self.all_requests.total_size += size
+
+                request_headers = {
+                    h["name"].lower(): h["value"]
+                    for h in entry.get("request", {}).get("headers", [])
+                    if "name" in h and "value" in h
+                }
+                response_headers = {
+                    h["name"].lower(): h["value"]
+                    for h in entry.get("response", {}).get("headers", [])
+                    if "name" in h and "value" in h
+                }
+                cookie_header = request_headers.get("cookie", "")
+
                 self.all_requests.items.append(
                     RequestItem(
                         url=url,
@@ -241,6 +254,12 @@ class EcoindexScraper:
                         status=entry["response"]["status"],
                         size=size,
                         category=category,
+                        http_version=entry.get("response", {}).get("httpVersion"),
+                        content_encoding=response_headers.get("content-encoding"),
+                        cache_control=response_headers.get("cache-control"),
+                        expires=response_headers.get("expires"),
+                        response_date=response_headers.get("date"),
+                        cookie_header_size=len(cookie_header),
                     )
                 )
             self.all_requests.aggregation = MimetypeAggregation(**aggregation)

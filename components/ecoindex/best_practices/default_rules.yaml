@@ -62,3 +62,134 @@ rules:
     higher_is_worse: false
     thresholds:
       fail: 1
+
+  - id: stylesheets_number
+    enabled: true
+    checker: stylesheets_number
+    category: network
+    rweb_id: RWEB_0035
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0035-limit-the-number-of-css
+    title: "Limit the number of CSS"
+    description: >
+      Limit stylesheet files to avoid multiplying HTTP requests and simplify
+      browser rendering. Prefer a shared CSS plus a few media-specific sheets.
+    thresholds:
+      # GreenIT-Analysis: >7 warn, >10 fail
+      warn: 7
+      fail: 10
+
+  - id: standard_typefaces
+    enabled: true
+    checker: standard_typefaces
+    category: network
+    rweb_id: RWEB_0032
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0032-prefer-standard-fonts
+    title: "Prefer standard fonts"
+    description: >
+      Prefer system fonts already available on the user device. Downloaded
+      web fonts consume bandwidth and delay text rendering.
+    thresholds:
+      warn: 1
+      fail: 2
+
+  - id: social_network_button
+    enabled: true
+    checker: social_network_button
+    category: user-device
+    rweb_id: RWEB_0059
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0059-replace-the-official-social-network-sharing-buttons
+    title: "Replace official social network sharing buttons"
+    description: >
+      Official social widgets load heavy third-party scripts. Prefer lightweight
+      share links that do not pull external SDKs.
+    thresholds:
+      fail: 0
+
+  - id: animated_gifs
+    enabled: true
+    checker: animated_gifs
+    category: user-device
+    rweb_id: RWEB_0099
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0099-limit-the-use-of-animated-gif
+    title: "Limit the use of animated GIFs"
+    description: >
+      Animated GIFs are heavier and less efficient than modern video formats
+      such as WebM or MP4 for animations.
+    thresholds:
+      fail: 0
+
+  - id: http_errors
+    enabled: true
+    checker: http_errors
+    category: network
+    title: "Avoid HTTP error responses"
+    description: >
+      Resources returning HTTP status codes greater than or equal to 400 waste
+      bandwidth and often indicate broken dependencies.
+    thresholds:
+      fail: 0
+
+  - id: http_redirects
+    enabled: true
+    checker: http_redirects
+    category: network
+    rweb_id: RWEB_0112
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0112-avoir-redirections
+    title: "Avoid redirects"
+    description: >
+      Redirects degrade response time and consume resources. Prefer direct URLs
+      whenever possible.
+    thresholds:
+      fail: 1
+
+  - id: http2
+    enabled: true
+    checker: http2
+    category: network
+    rweb_id: RWEB_0083
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0083-http2-over-http1
+    title: "Prefer HTTP/2 to HTTP/1"
+    description: >
+      HTTP/2 multiplexes resources over a single connection and transfers fewer
+      bytes than HTTP/1, improving load time and efficiency.
+    thresholds:
+      fail: 0
+
+  - id: cache_headers
+    enabled: true
+    checker: cache_headers
+    category: network
+    rweb_id: RWEB_0075
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0075-add-expires-or-cache-control-headers
+    title: "Add Expires or Cache-Control headers"
+    description: >
+      Static resources should declare cache lifetime via Cache-Control or
+      Expires so browsers avoid re-downloading unchanged assets.
+    thresholds:
+      fail: 0
+
+  - id: http_compression
+    enabled: true
+    checker: http_compression
+    category: network
+    rweb_id: RWEB_0076
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0076-compressing-text-files-css-js-html-and-svg
+    title: "Compress CSS, JavaScript, HTML and SVG files"
+    description: >
+      Text resources should be served with HTTP compression (gzip, brotli, …)
+      to reduce transferred bytes.
+    thresholds:
+      fail: 0
+
+  - id: no_cookie_static
+    enabled: true
+    checker: no_cookie_static
+    category: datacenter
+    rweb_id: RWEB_0081
+    url: https://rweb.greenit.fr/en/fiches/RWEB_0081-host-static-resources-on-a-cookie-free-domain
+    title: "Host static resources on a cookie-free domain"
+    description: >
+      Cookies attached to static asset requests inflate every transfer. Serve
+      CSS, JS, images and fonts from a cookie-less domain.
+    thresholds:
+      fail: 1

@@ -105,6 +105,7 @@ extraPaths = ["bases", "components"]
 "bases/ecoindex/backend" = "ecoindex/backend"
 "bases/ecoindex/worker" = "ecoindex/worker"
 "bases/ecoindex/cli" = "ecoindex/cli"
+"components/ecoindex/best_practices" = "ecoindex/best_practices"
 "components/ecoindex/scraper" = "ecoindex/scraper"
 "components/ecoindex/screenshot_storage" = "ecoindex/screenshot_storage"
 "components/ecoindex/models" = "ecoindex/models"
