@@ -212,19 +212,30 @@ async def test_get_requests_from_har_file_includes_domain() -> None:
         "log": {
             "entries": [
                 {
-                    "request": {"url": "https://www.ecoindex.fr/"},
+                    "request": {
+                        "url": "https://www.ecoindex.fr/",
+                        "headers": [],
+                    },
                     "response": {
                         "status": 200,
+                        "httpVersion": "HTTP/2.0",
+                        "headers": [
+                            {"name": "content-encoding", "value": "gzip"},
+                            {"name": "cache-control", "value": "max-age=3600"},
+                        ],
                         "content": {"mimeType": "text/html"},
                         "_transferSize": 1000,
                     },
                 },
                 {
                     "request": {
-                        "url": "https://cdn.ecoindex.fr/css/bundle.css"
+                        "url": "https://cdn.ecoindex.fr/css/bundle.css",
+                        "headers": [{"name": "Cookie", "value": "a=1"}],
                     },
                     "response": {
                         "status": 200,
+                        "httpVersion": "HTTP/1.1",
+                        "headers": [],
                         "content": {"mimeType": "text/css"},
                         "_transferSize": 500,
                     },
@@ -241,7 +252,12 @@ async def test_get_requests_from_har_file_includes_domain() -> None:
 
     requests = await scraper.get_all_requests()
     assert requests[0].domain == "www.ecoindex.fr"
+    assert requests[0].http_version == "HTTP/2.0"
+    assert requests[0].content_encoding == "gzip"
+    assert requests[0].cache_control == "max-age=3600"
     assert requests[1].domain == "cdn.ecoindex.fr"
+    assert requests[1].http_version == "HTTP/1.1"
+    assert requests[1].cookie_header_size == 3
 
     requests_by_domain = await scraper.get_requests_by_domain()
     assert requests_by_domain["www.ecoindex.fr"].total_count == 1

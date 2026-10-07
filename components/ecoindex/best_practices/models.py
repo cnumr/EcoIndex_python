@@ -14,6 +14,7 @@ class RuleCategory(str, Enum):
 
     network = "network"
     user_device = "user-device"
+    datacenter = "datacenter"
 
 
 class Thresholds(BaseModel):

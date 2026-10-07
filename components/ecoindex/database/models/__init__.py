@@ -116,7 +116,7 @@ class ApiEcoindexBestPractice(SQLModel, table=True):
     category: str = SQLField(
         default=...,
         title="Category",
-        description="RWEB tier / category (network, user-device, ...)",
+        description="RWEB tier / category (network, user-device, datacenter, ...)",
     )
     title: str = SQLField(
         default=...,
